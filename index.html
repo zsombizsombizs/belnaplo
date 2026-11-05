@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bélnapló">
+<meta name="application-name" content="Bélnapló">
+<meta name="theme-color" content="#000000">
+<meta name="format-detection" content="telephone=no">
+<title>Bélnapló – Étel-, Tünet- és Emésztési Napló</title>
+<link rel="apple-touch-icon" id="appleIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23000'/%3E%3Ccircle cx='90' cy='90' r='56' fill='none' stroke='%2330D158' stroke-width='14'/%3E%3C/svg%3E">
+<link rel="icon" id="favIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23000'/%3E%3Ccircle cx='90' cy='90' r='56' fill='none' stroke='%2330D158' stroke-width='14'/%3E%3C/svg%3E">
+<link rel="manifest" id="manifestLink" href="data:application/manifest+json,%7B%22name%22%3A%22B%C3%A9lnapl%C3%B3%22%2C%22display%22%3A%22standalone%22%7D">
+<style>
+:root{
+  --bg:#000;--card:#1C1C1E;--card2:#2C2C2E;--card3:#3A3A3C;--sep:rgba(84,84,88,.5);
+  --t1:#fff;--t2:rgba(235,235,245,.62);--t3:rgba(235,235,245,.34);
+  --green:#30D158;--yellow:#FFD60A;--orange:#FF9F0A;--red:#FF453A;--blue:#0A84FF;--purple:#BF5AF2;--teal:#64D2FF;--indigo:#5E5CE6;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--tabh:54px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--t1)}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.35;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation}
+.topfade{position:fixed;top:0;left:0;right:0;height:var(--sat);background:rgba(0,0,0,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:30;pointer-events:none}
+.app{max-width:640px;margin:0 auto;padding:calc(var(--sat) + 10px) 16px calc(var(--tabh) + var(--sab) + 28px)}
+.page{display:none}
+.page.active{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:.35}to{opacity:1}}
+.hdr{margin:4px 4px 14px}
+.hdr h1{font-size:32px;font-weight:700;letter-spacing:.2px;margin:0;line-height:1.1}
+.hdr .sub{color:var(--t2);font-size:14px;margin-bottom:2px}
+.hdr .sub::first-letter{text-transform:uppercase}
+.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px;border:.5px solid rgba(255,255,255,.07)}
+.card.hl{border:1px solid rgba(10,132,255,.65);box-shadow:0 0 0 4px rgba(10,132,255,.12)}
+.card.list{padding:0;overflow:hidden}
+.ct{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px;min-height:22px}
+.ct h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--t2);margin:0}
+.ct .ctx{font-size:13px;color:var(--t3);text-align:right}
+.muted{color:var(--t2)}.small{font-size:13.5px}.tiny{font-size:12px;color:var(--t3)}
+.btn{min-height:44px;border-radius:12px;background:var(--card2);padding:10px 14px;font-weight:600;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;transition:transform .08s,opacity .08s}
+.btn:active,.ev:active,.chip:active{transform:scale(.97);opacity:.75}
+.btn.full{width:100%}.btn.blue{background:var(--blue);color:#fff}.btn.red{background:rgba(255,69,58,.16);color:var(--red)}
+.btn.green{background:var(--green);color:#000}.btn.ghost{background:transparent;color:var(--blue);padding:0 4px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stack>*+*{margin-top:10px}
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:18px}
+.hero .glow{position:absolute;right:-70px;top:-90px;width:250px;height:250px;border-radius:50%;background:var(--zone);opacity:.22;filter:blur(60px);pointer-events:none}
+.hero-top{display:flex;justify-content:space-between;align-items:center;position:relative;gap:8px}
+.hero-top .lbl{font-size:15px;color:var(--t2);font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,.08);color:var(--zone);text-align:right}
+.hero-main{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-top:6px;position:relative}
+.count{font-size:78px;font-weight:800;line-height:1;color:var(--zone);font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.count small{font-size:22px;font-weight:700;letter-spacing:0;margin-left:4px;color:var(--t2)}
+.goal{font-size:15px;color:var(--t2);margin-top:6px}
+.goal b{color:var(--t1)}
+.plus{width:118px;min-height:108px;border-radius:22px;background:var(--zone);color:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:700;box-shadow:0 10px 26px -10px var(--zone)}
+.plus .p1{font-size:34px;line-height:1;font-weight:800}
+.plus .p2{font-size:13px;line-height:1.15;text-align:center;padding:0 8px}
+.dots{display:flex;gap:6px;margin-top:14px;position:relative;flex-wrap:wrap}
+.dots i{width:22px;height:8px;border-radius:4px;background:var(--card3)}
+.dots i.g{box-shadow:inset 0 0 0 1px rgba(48,209,88,.7)}
+.dots i.f{background:var(--zone);box-shadow:none}
+.hero-foot{margin-top:12px;font-size:13px;color:var(--t2);position:relative}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card2);border-radius:14px;padding:10px 10px 12px;min-height:80px;min-width:0}
+.stat .k{font-size:12px;color:var(--t2);font-weight:600}
+.stat .v{font-size:21px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .s{font-size:11.5px;color:var(--t3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* DRINKS */
+.drink{flex-direction:column;min-height:86px;gap:3px;padding:8px 6px;border-radius:16px;position:relative}
+.drink .e{font-size:25px;line-height:1}
+.drink .l{font-size:13px;font-weight:600;line-height:1.15}
+.drink .n{position:absolute;top:6px;right:7px;font-size:12px;font-weight:700;background:var(--blue);color:#fff;border-radius:10px;min-width:20px;height:20px;padding:0 6px;display:flex;align-items:center;justify-content:center}
+.drink .w{font-size:11px;color:var(--orange);font-weight:700;line-height:1.1}
+/* ACTION BUTTONS */
+.act{min-height:64px;justify-content:flex-start;padding:10px 14px;border-radius:16px;font-size:16px;width:100%}
+.act .ai{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex:none;background:rgba(var(--c),.2)}
+.act .at{display:flex;flex-direction:column;align-items:flex-start;text-align:left;line-height:1.25}
+.act .at small{font-weight:500;color:var(--t2);font-size:12.5px}
+/* SEGMENTED */
+.seg{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1 1 0;min-height:44px;border-radius:10px;font-size:14px;font-weight:600;color:var(--t2);padding:6px 4px;line-height:1.15;white-space:normal;transition:background .15s,color .15s}
+.seg button.on{background:#636366;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.seg button.on[style*="--c"]{background:rgb(var(--c));color:#000}
+.seg.scale button{font-size:18px;font-weight:700}
+.scale-cap{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--t3);margin:6px 4px 0}
+.scale-cap span:last-child{text-align:right}
+.seg.bristol{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:none;padding:0}
+.seg.bristol button{min-height:86px;background:var(--card2);border:2px solid transparent;border-radius:14px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:10px 12px;text-align:left;gap:3px;color:var(--t1)}
+.seg.bristol button b{font-size:15px;line-height:1.2}
+.seg.bristol button span{font-size:12px;color:var(--t2);font-weight:500}
+.seg.bristol button i{font-style:normal;font-size:20px}
+.seg.bristol button.on{background:rgba(var(--c),.2);border-color:rgb(var(--c));box-shadow:none;color:#fff}
+/* FIELDS */
+.field{margin-bottom:18px}
+.field>label,.flabel{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--t2);margin:0 4px 7px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.hint{text-transform:none;letter-spacing:0;font-weight:500;color:var(--t3);font-size:12px}
+.input{display:block;width:100%;min-height:46px;background:var(--card2);border:1px solid transparent;border-radius:12px;padding:11px 12px;color:var(--t1);font-size:17px;outline:none;-webkit-appearance:none;appearance:none;font-family:inherit}
+.input:focus{border-color:rgba(10,132,255,.7)}
+.input::placeholder{color:var(--t3)}
+textarea.input{resize:none;min-height:80px;line-height:1.35}
+input[type=datetime-local].input{text-align:left}
+input[type=datetime-local]::-webkit-date-and-time-value{text-align:left}
+input[type=search].input{padding-left:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;background-size:20px}
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -16px;padding:0 16px 2px}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--card2);font-size:14px;font-weight:600;color:var(--t2);border:1px solid transparent;white-space:nowrap}
+.chip.on{background:rgba(var(--c,10,132,255),.22);border-color:rgba(var(--c,10,132,255),.85);color:#fff}
+.chip .m{width:7px;height:7px;border-radius:4px;background:var(--yellow);margin-left:2px}
+.mt{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:7px;background:rgba(var(--c),.16);color:rgb(var(--c));white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:rgba(var(--c),.18);color:rgb(var(--c));white-space:nowrap}
+/* EVENT ROWS */
+.ev{display:flex;gap:12px;padding:12px 14px;align-items:flex-start;min-height:62px;width:100%;text-align:left;border-bottom:.5px solid var(--sep);cursor:pointer}
+.ev:last-child{border-bottom:0}
+.ev .ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;background:rgba(var(--c),.18)}
+.ev .bd{flex:1;min-width:0}
+.ev .tt{font-weight:600;font-size:15.5px;line-height:1.3;word-break:break-word}
+.ev .sb{font-size:13px;color:var(--t2);margin-top:2px;word-break:break-word}
+.ev .tg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.ev .tm{font-size:13px;color:var(--t2);font-variant-numeric:tabular-nums;flex:none;padding-top:2px}
+.ev.match{background:rgba(10,132,255,.09)}
+.dayh{display:flex;justify-content:space-between;align-items:center;margin:20px 4px 8px;gap:8px}
+.dayh .dn{font-size:19px;font-weight:700}
+.dayh .dn::first-letter{text-transform:uppercase}
+.dayh .ds{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.empty{text-align:center;color:var(--t2);padding:26px 16px;font-size:15px}
+.empty .ei{font-size:40px;margin-bottom:8px}
+/* RANKINGS */
+.rank{padding:10px 0;border-bottom:.5px solid var(--sep)}
+.rank:last-child{border-bottom:0}
+.rank .rh{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.rank .rl{font-size:15px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .rv{font-size:13px;color:var(--t2);flex:none;font-variant-numeric:tabular-nums}
+.rank .rv b{font-size:15px;color:var(--t1)}
+.bar{position:relative;height:8px;border-radius:4px;background:var(--card2);margin-top:7px}
+.bar>i{display:block;height:100%;border-radius:4px}
+.bar>u{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.75);border-radius:1px;text-decoration:none}
+.bar.thin{height:6px;margin-top:5px}
+.low{opacity:.45}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--t2);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.note{font-size:12.5px;color:var(--t3);margin-top:10px;line-height:1.45}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl td,.tbl th{padding:9px 3px;border-bottom:.5px solid var(--sep);text-align:right;font-variant-numeric:tabular-nums;vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl th{font-size:11px;color:var(--t2);font-weight:600;text-transform:uppercase}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+svg.chart{width:100%;height:auto;display:block}
+details.dict{border-top:.5px solid var(--sep);padding:10px 0}
+details.dict summary{font-weight:600;cursor:pointer;min-height:30px;list-style:none}
+details.dict summary::-webkit-details-marker{display:none}
+details.dict p{font-size:13px;color:var(--t2);margin:6px 0 0;line-height:1.5}
+.notice{display:flex;gap:10px;align-items:flex-start;background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.35);border-radius:14px;padding:12px;font-size:13.5px;margin-bottom:14px;line-height:1.4}
+.notice.warn{background:rgba(255,214,10,.1);border-color:rgba(255,214,10,.35)}
+.notice.info{background:rgba(10,132,255,.1);border-color:rgba(10,132,255,.35)}
+.reflex-prev{border-radius:12px;padding:12px;font-size:14px;background:var(--card2);margin-bottom:18px;color:var(--t2);line-height:1.4}
+.reflex-prev.on{background:rgba(255,214,10,.14);color:var(--yellow)}
+ol.steps{margin:0;padding-left:20px;font-size:14px;line-height:1.55;color:var(--t2)}
+ol.steps b{color:var(--t1)}
+/* TAB BAR */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:space-around;background:rgba(22,22,24,.86);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);padding-bottom:var(--sab)}
+.tabbar button{flex:1;max-width:160px;height:var(--tabh);min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;font-weight:600;color:#8E8E93}
+.tabbar button.on{color:var(--blue)}
+.tabbar svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+/* SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
+.overlay.show{opacity:1;pointer-events:auto}
+#overlay2{z-index:70}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:640px;max-height:calc(100% - var(--sat) - 12px);background:#1C1C1E;border-radius:16px 16px 0 0;z-index:61;display:flex;flex-direction:column;transform:translateY(110%);transition:transform .32s cubic-bezier(.2,.85,.25,1);box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.sheet{visibility:hidden;transition:transform .32s cubic-bezier(.2,.85,.25,1),visibility 0s linear .32s}
+.sheet.show{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.85,.25,1),visibility 0s}
+.sh-grab{width:38px;height:5px;border-radius:3px;background:#48484A;margin:7px auto 0;flex:none}
+.sh-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:2px 6px 6px;border-bottom:.5px solid var(--sep);flex:none}
+.sh-head h3{margin:0;font-size:17px;font-weight:600;text-align:center;white-space:nowrap}
+.sh-head .btn{background:none;color:var(--blue);font-size:17px;padding:0 10px}
+.sh-head .save{font-weight:700;justify-self:end}
+.sh-head .cancel{justify-self:start;font-weight:400}
+.sh-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(24px + var(--sab));overscroll-behavior:contain}
+/* ACTION DIALOG */
+.dlg{position:fixed;left:0;right:0;bottom:0;z-index:71;padding:0 10px calc(10px + var(--sab));max-width:560px;margin:0 auto;transform:translateY(120%);transition:transform .28s cubic-bezier(.2,.85,.25,1)}
+.dlg{visibility:hidden;transition:transform .28s cubic-bezier(.2,.85,.25,1),visibility 0s linear .28s}
+.dlg.show{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.2,.85,.25,1),visibility 0s}
+.dlg .box{background:rgba(44,44,46,.98);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.dlg .msg{padding:16px 16px 14px;text-align:center;border-bottom:.5px solid var(--sep)}
+.dlg .msg b{display:block;font-size:15px;margin-bottom:4px}
+.dlg .msg div{font-size:13px;color:var(--t2);line-height:1.4}
+.dlg .box button{display:block;width:100%;min-height:56px;font-size:18px;color:var(--blue);border-bottom:.5px solid var(--sep)}
+.dlg .box button:last-child{border-bottom:0}
+.dlg button.destructive{color:var(--red)}
+.dlg>button.cancel{display:block;width:100%;min-height:56px;background:#2C2C2E;border-radius:14px;font-weight:600;font-size:18px;color:var(--blue)}
+/* TOAST */
+.toast{position:fixed;left:50%;bottom:calc(var(--tabh) + var(--sab) + 14px);transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:80;background:rgba(58,58,60,.97);color:#fff;border-radius:14px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:10px;min-height:48px;width:max-content;max-width:calc(100% - 32px);font-size:14.5px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:var(--yellow);font-weight:700;min-height:44px;padding:0 10px;flex:none}
+.toast span{padding:4px 0}
+</style>
+</head>
+<body>
+<div class="topfade"></div>
+<main class="app">
+  <section class="page active" id="page-home"></section>
+  <section class="page" id="page-timeline">
+    <div class="hdr"><div class="sub">Minden esemény időrendben</div><h1>Idővonal</h1></div>
+    <input id="q" class="input" type="search" placeholder="Keresés: pl. pizza, kávé, reflex…" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+    <div style="height:10px"></div>
+    <div class="chips scroll" id="tl-chips"></div>
+    <div id="tl-list"></div>
+  </section>
+  <section class="page" id="page-insights"></section>
+  <section class="page" id="page-data"></section>
+</main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-act="tab" data-v="home" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Rögzítés</button>
+  <button data-act="tab" data-v="timeline"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>Idővonal</button>
+  <button data-act="tab" data-v="insights"><svg viewBox="0 0 24 24"><path d="M5 20v-8M12 20V5M19 20v-5"/><path d="M3 20.5h18"/></svg>Elemzés</button>
+  <button data-act="tab" data-v="data"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>Adatok</button>
+</nav>
+
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="overlay" id="overlay2"></div>
+<div class="dlg" id="dialog" role="alertdialog"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+/* =========================================================================
+   ALAP SEGÉDFÜGGVÉNYEK
+   ========================================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const MIN = 60000, HOUR = 3600000, DAY = 86400000;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; };
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const f1 = x => x == null || isNaN(x) ? '–' : x.toFixed(1).replace('.', ',');
+const pct = x => Math.round((x || 0) * 100);
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const keyToTs = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).getTime(); };
+const addDaysKey = (k, n) => { const [y, m, d] = k.split('-').map(Number); return dayKey(new Date(y, m - 1, d + n).getTime()); };
+const startOfDay = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const fmtTime = ts => { const d = new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const toLocalInput = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fromLocalInput = s => {
+  if (!s) return Date.now();
+  const [dp, tp] = s.split('T'); const [y, m, d] = dp.split('-').map(Number); const [hh, mm] = (tp || '00:00').split(':').map(Number);
+  return new Date(y, m - 1, d, hh || 0, mm || 0).getTime();
+};
+const readTs = (input, orig) => input.value === toLocalInput(orig) ? orig : fromLocalInput(input.value);
+const fmtAgo = ms => {
+  if (ms < MIN) return 'most';
+  const m = Math.floor(ms / MIN);
+  if (m < 60) return `${m} p`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ó ${m % 60} p`;
+  return `${Math.floor(h / 24)} nap`;
+};
+const fmtBytes = b => b == null ? '–' : b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1).replace('.', ',') + ' MB';
+const DTF_LONG = new Intl.DateTimeFormat('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
+const DTF_SHORT = new Intl.DateTimeFormat('hu-HU', { month: 'short', day: 'numeric', weekday: 'long' });
+const DTF_FULL = new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+function dayLabel(k) {
+  const t = dayKey(Date.now());
+  if (k === t) return 'Ma';
+  if (k === addDaysKey(t, -1)) return 'Tegnap';
+  return DTF_SHORT.format(keyToTs(k));
+}
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+/* =========================================================================
+   INDEXEDDB WRAPPER
+   ========================================================================= */
+class EventDB {
+  constructor(name = 'belnaplo-db', version = 1) { this.name = name; this.version = version; this.db = null; }
+  open() {
+    return new Promise((res, rej) => {
+      if (!('indexedDB' in window)) return rej(new Error('Az IndexedDB nem támogatott ebben a böngészőben.'));
+      const r = indexedDB.open(this.name, this.version);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        if (!d.objectStoreNames.contains('events')) {
+          const s = d.createObjectStore('events', { keyPath: 'id' });
+          s.createIndex('ts', 'ts'); s.createIndex('type', 'type');
+        }
+        if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'key' });
+      };
+      r.onsuccess = () => { this.db = r.result; this.db.onversionchange = () => this.db.close(); res(this); };
+      r.onerror = () => rej(r.error);
+      r.onblocked = () => rej(new Error('Az adatbázist egy másik lap zárolja.'));
+    });
+  }
+  _run(stores, mode, fn) {
+    return new Promise((res, rej) => {
+      let tx, out;
+      try { tx = this.db.transaction(stores, mode); out = fn(tx); } catch (e) { rej(e); return; }
+      tx.oncomplete = () => res(out && out.__req ? out.__req.result : out);
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error || new Error('A tranzakció megszakadt.'));
+    });
+  }
+  async getAll() { return (await this._run('events', 'readonly', tx => ({ __req: tx.objectStore('events').getAll() }))) || []; }
+  put(e) { return this.putMany([e]); }
+  putMany(arr) { return this._run('events', 'readwrite', tx => { const s = tx.objectStore('events'); arr.forEach(e => s.put(e)); }); }
+  deleteMany(ids) { return this._run('events', 'readwrite', tx => { const s = tx.objectStore('events'); ids.forEach(id => s.delete(id)); }); }
+  clear() { return this._run('events', 'readwrite', tx => { tx.objectStore('events').clear(); }); }
+  async getMeta(key) { const r = await this._run('meta', 'readonly', tx => ({ __req: tx.objectStore('meta').get(key) })); return r ? r.value : null; }
+  setMeta(key, value) { return this._run('meta', 'readwrite', tx => { tx.objectStore('meta').put({ key, value }); }); }
+}
+
+/* =========================================================================
+   ÖSSZETEVŐ-LEXIKON (AUTO-TAGGER)
+   Kulcsszó szintaxis: "szó" -> 5+ betűnél szórészlet, rövidebbnél szókezdet;
+   "^szó" -> mindig szókezdet; "~szó" -> mindig szórészlet; [RegExp, 'kijelzés'] -> egyedi.
+   ========================================================================= */
+const TAGS = [
+  { id: 'gluten', label: 'Glutén / Búza', short: 'Glutén', emoji: '🌾', rgb: '255,214,10',
+    kw: ['kenyér', 'péksüti', 'pékáru', '^kifli', 'zsemle', 'croissant', 'tészta', 'spagetti', 'makaróni', 'pizza', 'galuska', 'nokedli', 'panír', [/rantott(?!a)/, 'rántott'], [/liszt(?!mentes)/, 'liszt'], 'keksz', '^süti', 'sütemény', '^pite', 'palacsinta', 'gofri', '^zab', '^árpa', '^rozs', '^sör', 'tortilla', 'gyros', 'burger', 'zsemlemorzsa', 'tarhonya', 'kuszkusz', 'bulgur', 'pogácsa', 'bagett', 'kalács', 'rétes', '^torta', 'muffin', 'lasagne', '^wrap', '^fánk', '^bagel', 'kakaós csiga'] },
+  { id: 'lactose', label: 'Laktóz / Tejtermék', short: 'Laktóz', emoji: '🥛', rgb: '235,235,245',
+    kw: ['^tej', 'tejes', 'cappuccino', '^latte', '^vaj', '~sajt', 'trappista', 'mozzarella', 'cheddar', 'parmezán', '^feta', '^túró', 'tejföl', 'tejszín', 'joghurt', '^kefir', 'krémsajt', 'mascarpone', 'ricotta', '^fagyi', 'fagylalt', 'jégkrém', 'tejsavó', '^fehérje', '~kakaó', 'puding', 'tejcsoki', 'milkshake', 'camembert'] },
+  { id: 'fodmap', label: 'Magas FODMAP / Erjesztő', short: 'FODMAP', emoji: '🧅', rgb: '255,159,10',
+    kw: ['~hagyma', '^bab', 'lencse', 'csicseri', [/borso(?!s)/, 'borsó'], '^szója', '^alma', 'körte', 'szilva', 'barack', 'dinnye', 'cseresznye', 'meggy', 'aszalt', 'karfiol', 'brokkoli', 'káposzta', 'kelbimbó', 'gomba', 'kukorica', '^méz', 'agávé', 'avokádó', 'spárga', 'articsóka'] },
+  { id: 'fat', label: 'Zsíros / Olajos (reflex-trigger)', short: 'Zsíros', emoji: '🍟', rgb: '255,69,58',
+    kw: [[/rantott(?!a)/, 'rántott'], 'sült krumpli', 'sült burgonya', 'hasábburgonya', '^hasáb', '~olaj', [/zsir(?!szegeny|talan|mentes)/, 'zsír'], 'szalonna', 'bacon', 'kolbász', 'szalámi', 'virsli', 'tepertő', 'majonéz', 'tartár', 'hamburger', '~burger', 'gyros', 'pizza', 'lángos', 'bundás', 'tejszínes', 'krémleves', 'csülök', 'pörkölt', 'fasírt', 'chips', 'nuggets', 'kebab', 'hot dog'] },
+  { id: 'fiber', label: 'Nyers rost / Nehéz héj', short: 'Nyers rost', emoji: '🥗', rgb: '48,209,88',
+    kw: ['saláta', '^nyers', 'paprika', 'uborka', 'paradicsom', 'magvak', '^magos', '^dió', 'kesudió', 'mogyoró', 'mandula', 'tökmag', 'napraforgó', 'teljes kiőrlésű', 'korpa', 'müzli', 'granola', 'pattogatott', 'kukorica', '^chia', 'lenmag', '^héjas'] },
+  { id: 'caffeine', label: 'Koffein / Stimuláns', short: 'Koffein', emoji: '☕', rgb: '172,142,104',
+    kw: ['~kávé', 'eszpresszó', 'espresso', 'cappuccino', '^latte', 'americano', 'flat white', 'energiaital', 'energia ital', '^hell', 'red bull', 'redbull', 'monster', 'fekete tea', 'zöld tea', '^kóla', '^cola', '^coca', 'pepsi', 'matcha', 'pre-workout', 'preworkout', 'koffein'] },
+  { id: 'spicy', label: 'Csípős / Irritáló', short: 'Csípős', emoji: '🌶️', rgb: '255,55,95',
+    kw: ['csípős', '^erős', 'chili', 'jalapeno', 'erős pista', 'borsos', 'curry', 'gyömbér', 'torma', 'mustár', 'tabasco', 'sriracha', 'wasabi', 'harissa', 'cayenne'] },
+  { id: 'sweetener', label: 'Édesítő / Cukoralkohol', short: 'Édesítő', emoji: '🧪', rgb: '100,210,255',
+    kw: ['^zero', '^light', 'cukormentes', 'édesítő', 'xilit', 'eritrit', 'maltit', 'szorbit', '^rágó', 'fehérjeszelet', 'protein', 'diétás', 'stevia', 'aszpartam', 'szukralóz', 'nyírfacukor'] },
+  { id: 'safe', label: 'Biztonságos / Kímélő', short: 'Kímélő', emoji: '✅', rgb: '48,209,88',
+    kw: ['^rizs', 'rizzs', 'főtt krumpli', 'krumplipüré', '^burgonya', 'burgonyapüré', 'csirkemell', 'pulyka', '^hal', 'tonhal', 'lazac', 'tőkehal', 'pisztráng', 'banán', 'főtt répa', 'répapüré', 'zabkása', 'húsleves', 'pirítós', '~tojás', 'kétszersült'] },
+];
+const TAG = Object.fromEntries(TAGS.map(t => [t.id, t]));
+// "…mentes" kifejezések kikapcsolják az adott címkét
+const SUPPRESS = {
+  gluten: ['glutenmentes', 'gluten mentes', 'gluten-mentes'],
+  lactose: ['laktozmentes', 'laktoz mentes', 'laktoz-mentes'],
+  caffeine: ['koffeinmentes', 'koffein mentes', 'koffein-mentes', 'decaf'],
+};
+// A "Kímélő" címke csak akkor kapcsol be automatikusan, ha nincs mellette trigger-címke
+const SAFE_GATE = ['lactose', 'fodmap', 'fat', 'fiber', 'caffeine', 'spicy', 'sweetener'];
+
+function compileKw(k) {
+  if (Array.isArray(k)) return { re: k[0], disp: k[1] };
+  let w = k, mode;
+  if (w[0] === '^') { mode = 'start'; w = w.slice(1); }
+  else if (w[0] === '~') { mode = 'sub'; w = w.slice(1); }
+  else mode = norm(w).length >= 5 ? 'sub' : 'start';
+  const n = norm(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return { re: new RegExp(mode === 'start' ? `(?:^|[^a-z0-9])${n}` : n), disp: w };
+}
+const KW = TAGS.map(t => ({ id: t.id, list: t.kw.map(compileKw) }));
+
+function autoTag(text) {
+  const n = ' ' + norm(text) + ' ';
+  const tags = new Set(), hits = {};
+  if (!n.trim()) return { tags, hits, safeBlocked: false };
+  for (const t of KW) {
+    if (SUPPRESS[t.id] && SUPPRESS[t.id].some(s => n.includes(s))) continue;
+    for (const k of t.list) {
+      if (k.re.test(n)) {
+        tags.add(t.id);
+        (hits[t.id] = hits[t.id] || []);
+        if (!hits[t.id].includes(k.disp)) hits[t.id].push(k.disp);
+      }
+    }
+  }
+  let safeBlocked = false;
+  if (tags.has('safe') && SAFE_GATE.some(g => tags.has(g))) { tags.delete('safe'); safeBlocked = true; }
+  return { tags, hits, safeBlocked };
+}
+function finalTags(autoSet, ov) {
+  const f = new Set(autoSet);
+  (ov.on || []).forEach(t => f.add(t));
+  (ov.off || []).forEach(t => f.delete(t));
+  return TAGS.map(t => t.id).filter(id => f.has(id));
+}
+
+/* Konkrét ételek kinyerése a szövegből (pl. "Csirkemell rizzsel" -> csirkemell, rizs) */
+const UNIT_RE = /^(?:\d+(?:[.,]\d+)?|egy|két|ket|három|harom|négy|fél|fel|néhány|pár|1\/2)\s*(?:db|darab|g|gr|gramm|dkg|kg|dl|ml|l|liter|szelet|tányér|bögre|csésze|pohár|adag|kanál|evőkanál|teáskanál|marék|doboz|üveg|kis|nagy)?\.?\s+/i;
+const ADJ = new Set(['sült', 'főtt', 'rántott', 'párolt', 'grillezett', 'pirított', 'zöld', 'vajas', 'tejfölös', 'sajtos', 'friss', 'nyers', 'fehér', 'barna', 'házi', 'natúr']);
+const KEEP_LONG = /(kávé|püré|zselé|frappé)$/;
+function stemWord(w) {
+  let s = w, stripped = false;
+  const dig = s.match(/(zzs|ssz|ccs|ggy|lly|nny|tty)(al|el)$/);
+  if (s.length > 5 && /(val|vel)$/.test(s)) { s = s.slice(0, -3); stripped = true; }
+  else if (dig) { s = s.slice(0, -dig[0].length) + ({ zzs: 'zs', ssz: 'sz', ccs: 'cs', ggy: 'gy', lly: 'ly', nny: 'ny', tty: 'ty' })[dig[1]]; stripped = true; }
+  else if (s.length > 4 && /([bcdfghjklmnprstvz])\1(al|el)$/.test(s)) { s = s.slice(0, -3); stripped = true; }
+  if (stripped && /[áé]$/.test(s) && !KEEP_LONG.test(s)) s = s.slice(0, -1) + (s.endsWith('á') ? 'a' : 'e');
+  return s;
+}
+const ITEM_LABEL = new Map();
+const ITEM_CACHE = new Map();
+function extractItems(text) {
+  if (ITEM_CACHE.has(text)) return ITEM_CACHE.get(text);
+  const out = [], seen = new Set();
+  const push = label => {
+    label = label.trim().slice(0, 40); if (label.length < 2) return;
+    const key = norm(label); if (seen.has(key)) return;
+    seen.add(key); out.push({ key, label }); ITEM_LABEL.set(key, label);
+  };
+  String(text || '').split(/[,;+\n\/]|\s+(?:és|meg|plusz|valamint|&)\s+/i).forEach(seg => {
+    let s = seg.toLowerCase().replace(/[()"'.!?:]/g, ' ').replace(/\s+/g, ' ').trim();
+    for (let i = 0; i < 2; i++) s = s.replace(UNIT_RE, '');
+    if (!s) return;
+    const words = s.split(' ');
+    const last = words[words.length - 1], st = stemWord(last);
+    if (st !== last && words.length >= 2) {
+      let i = words.length - 1;
+      while (i - 1 > 0 && ADJ.has(words[i - 1])) i--;
+      push(words.slice(0, i).join(' '));
+      push([...words.slice(i, -1), st].join(' '));
+    } else {
+      words[words.length - 1] = st; push(words.join(' '));
+    }
+  });
+  ITEM_CACHE.set(text, out);
+  return out;
+}
+const itemsOf = m => extractItems(m.text || '');
+
+/* =========================================================================
+   KONSTANSOK / CÍMKÉK
+   ========================================================================= */
+const BRISTOL = {
+  1: { name: 'Kemény / bogyós', sub: 'Székrekedés (≈ Bristol 1–2)', rgb: '172,142,104', i: '🟤' },
+  2: { name: 'Normál / formált', sub: 'Ideális (≈ Bristol 3–4)', rgb: '48,209,88', i: '🟢' },
+  3: { name: 'Puha / darabos / laza', sub: 'Laza (≈ Bristol 5)', rgb: '255,159,10', i: '🟠' },
+  4: { name: 'Vizes / hasmenéses', sub: 'Hasmenés (≈ Bristol 6–7)', rgb: '255,69,58', i: '🔴' },
+};
+const SIZE_L = { S: 'Kis adag / snack', M: 'Normál adag', L: 'Nagy / bőséges adag' };
+const SIZE_F = { S: '🥄 Kis adag / snack', M: '🍽️ Normál adag', L: '🍔 Nagy / bőséges adag' };
+const STRESS_L = { 1: 'Nyugodt', 2: 'Átlagos', 3: 'Feszült / stresszes' };
+const HOURS_L = { 4.5: '<5 óra', 6: '6 óra', 7: '7 óra', 8: '8 óra', 9: '9+ óra' };
+const QUAL_L = { rested: 'Kipihent', avg: 'Átlagos', tired: 'Fáradt / nyúzott' };
+const BELLY_L = { flat: 'lapos, nyugodt', bloated: 'már puffadt / feszül' };
+const DRINK = {
+  water: { icon: '💧', rgb: '100,210,255', name: e => `Víz ${e.amount || 3} dl` },
+  coffee: { icon: '☕', rgb: '172,142,104', name: () => 'Kávé / koffein' },
+  other: { icon: '🥤', rgb: '255,55,95', name: e => ({ alcohol: 'Alkohol', sugary: 'Cukros üdítő', zero: 'Zero / light üdítő' })[e.sub] || 'Alkohol / cukros / zero ital' },
+};
+const SC_RGB = ['48,209,88', '164,214,61', '255,214,10', '255,159,10', '255,69,58'];
+function zoneOf(n) {
+  if (n <= 2) return { hex: '#30D158', rgb: '48,209,88', name: 'Célzóna' };
+  if (n <= 4) return { hex: '#FF9F0A', rgb: '255,159,10', name: 'Emelkedett' };
+  return { hex: '#FF453A', rgb: '255,69,58', name: 'Hipermotilitás – problémás nap' };
+}
+const tagMini = id => { const t = TAG[id]; return t ? `<span class="mt" style="--c:${t.rgb}">${t.emoji} ${esc(t.short)}</span>` : ''; };
+
+/* =========================================================================
+   ÁLLAPOT + ADATMŰVELETEK
+   ========================================================================= */
+const db = new EventDB();
+const S = { events: [], tab: 'home', range: '30', filter: { q: '', chip: 'all' }, tlDays: 14, renderedDay: null };
+const sortEvents = () => S.events.sort((a, b) => a.ts - b.ts || String(a.id).localeCompare(String(b.id)));
+
+async function saveEvent(e, opts = {}) {
+  const now = Date.now();
+  e.updatedAt = now; if (!e.createdAt) e.createdAt = now;
+  await db.put(e);
+  const i = S.events.findIndex(x => x.id === e.id);
+  if (i >= 0) S.events[i] = e; else S.events.push(e);
+  sortEvents();
+  await recomputeDerived();
+  if (!opts.noRefresh) refresh();
+  return e;
+}
+async function deleteEvent(id, silent = false) {
+  const e = S.events.find(x => x.id === id); if (!e) return;
+  await db.deleteMany([id]);
+  S.events = S.events.filter(x => x.id !== id);
+  await recomputeDerived();
+  refresh();
+  if (!silent) toast('Bejegyzés törölve', { action: 'Visszavonás', onAction: () => saveEvent(e) });
+}
+
+/* Reflex- és éhgyomri-kávé számítás (mentéskor és minden módosítás után) */
+const isTrigger = e => e.type === 'meal' || (e.type === 'drink' && e.kind === 'coffee');
+function triggerLabel(t) {
+  if (t.type === 'meal') return '🍽️ ' + trunc(t.text || 'Étkezés', 32);
+  return '☕ Kávé' + (t.fasting ? ' (éhgyomri)' : '');
+}
+function computeReflex(stool, triggers) {
+  let last = null;
+  for (const t of triggers) { if (t.id === stool.id) continue; if (t.ts <= stool.ts) last = t; else break; }
+  if (!last) return null;
+  const m = Math.round((stool.ts - last.ts) / MIN);
+  return m <= 45 ? { minutes: m, refId: last.id, label: triggerLabel(last) } : null;
+}
+function lowerBound(arr, ts) { let lo = 0, hi = arr.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid].ts < ts) lo = mid + 1; else hi = mid; } return lo; }
+function prior24Tags(stool, evs) {
+  const set = new Set();
+  for (let i = lowerBound(evs, stool.ts - DAY); i < evs.length && evs[i].ts <= stool.ts; i++) {
+    const e = evs[i];
+    if (e.type === 'meal') (e.tags || []).forEach(t => set.add(t));
+    else if (e.type === 'drink' && e.kind === 'coffee') set.add('caffeine');
+  }
+  return [...set].sort();
+}
+async function recomputeDerived() {
+  const evs = S.events, changed = new Set();
+  const firstMeal = new Map();
+  for (const e of evs) if (e.type === 'meal') { const k = dayKey(e.ts); if (!firstMeal.has(k) || e.ts < firstMeal.get(k)) firstMeal.set(k, e.ts); }
+  for (const e of evs) if (e.type === 'drink' && e.kind === 'coffee') {
+    const fm = firstMeal.get(dayKey(e.ts)); const f = !(fm != null && fm <= e.ts);
+    if (e.fasting !== f) { e.fasting = f; changed.add(e); }
+  }
+  const trig = evs.filter(isTrigger);
+  for (const s of evs) if (s.type === 'stool') {
+    const r = computeReflex(s, trig), p = prior24Tags(s, evs);
+    if (JSON.stringify(s.reflex || null) !== JSON.stringify(r) || JSON.stringify(s.prior24Tags || []) !== JSON.stringify(p)) {
+      s.reflex = r; s.prior24Tags = p; changed.add(s);
+    }
+  }
+  if (changed.size) await db.putMany([...changed]);
+}
+
+/* Napokra bontás */
+function emptyDay(k) { return { key: k, stools: [], meals: [], drinks: [], checks: [], sleep: null, n: 0, peakBloat: null, avgBloat: null, bad: false, green: false, logged: false }; }
+function buildDays(events) {
+  const days = new Map();
+  const get = k => { if (!days.has(k)) days.set(k, emptyDay(k)); return days.get(k); };
+  for (const e of events) {
+    const d = get(dayKey(e.ts));
+    if (e.type === 'stool') d.stools.push(e);
+    else if (e.type === 'meal') d.meals.push(e);
+    else if (e.type === 'drink') d.drinks.push(e);
+    else if (e.type === 'check') d.checks.push(e);
+    else if (e.type === 'sleep') d.sleep = e;
+  }
+  for (const d of days.values()) {
+    d.n = d.stools.length;
+    const b = d.checks.map(c => c.bloat).filter(v => v);
+    d.peakBloat = b.length ? Math.max(...b) : null;
+    d.avgBloat = b.length ? avg(b) : null;
+    d.bad = d.n >= 4 || (d.peakBloat || 0) >= 4;
+    d.green = d.n >= 1 && d.n <= 2 && (d.peakBloat == null || d.peakBloat <= 2);
+    d.logged = d.meals.length > 0 || d.stools.length > 0;
+  }
+  return days;
+}
+
+/* =========================================================================
+   UI ALKATRÉSZEK
+   ========================================================================= */
+function seg(name, opts, val, cls = '') {
+  return `<div class="seg ${cls}" data-name="${name}">${opts.map(([v, l, c]) =>
+    `<button type="button" data-v="${esc(v)}" class="${val != null && String(val) === String(v) ? 'on' : ''}"${c ? ` style="--c:${c}"` : ''}>${l}</button>`).join('')}</div>`;
+}
+function scale(name, val, caps, mode) {
+  const opts = [1, 2, 3, 4, 5].map(i => [String(i), String(i), mode === 'neutral' ? '10,132,255' : SC_RGB[i - 1]]);
+  return seg(name, opts, val, 'scale') + `<div class="scale-cap"><span>1 · ${caps[0]}</span><span>5 · ${caps[1]}</span></div>`;
+}
+const getSeg = (root, name) => { const b = root.querySelector(`.seg[data-name="${name}"] button.on`); return b ? b.dataset.v : null; };
+
+let toastTimer = null;
+function toast(msg, opt = {}) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>${opt.action ? `<button>${esc(opt.action)}</button>` : ''}`;
+  if (opt.action) t.querySelector('button').onclick = () => { t.classList.remove('show'); opt.onAction && opt.onAction(); };
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), opt.action ? 5000 : 2800);
+}
+
+const Sheet = {
+  onSave: null, onDelete: null, busy: false,
+  open({ title, body, saveLabel = 'Mentés', onSave, onDelete }) {
+    const sh = $('#sheet');
+    sh.innerHTML = `<div class="sh-grab"></div>
+      <div class="sh-head"><button class="btn cancel" data-sh="cancel">Mégse</button><h3>${esc(title)}</h3>${onSave ? `<button class="btn save" data-sh="save">${esc(saveLabel)}</button>` : '<span></span>'}</div>
+      <div class="sh-body">${body}${onDelete ? `<button class="btn red full" data-sh="delete" style="margin-top:4px">🗑️ Bejegyzés törlése</button>` : ''}</div>`;
+    this.onSave = onSave; this.onDelete = onDelete; this.busy = false;
+    $('#overlay').classList.add('show'); sh.classList.add('show');
+    $('.sh-body', sh).scrollTop = 0;
+    return $('.sh-body', sh);
+  },
+  close() {
+    $('#sheet').classList.remove('show'); $('#overlay').classList.remove('show');
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+};
+
+function ask(title, msg, buttons) {
+  return new Promise(res => {
+    const d = $('#dialog'), ov = $('#overlay2');
+    d.innerHTML = `<div class="box"><div class="msg"><b>${esc(title)}</b>${msg ? `<div>${esc(msg)}</div>` : ''}</div>${buttons.map((b, i) => `<button data-i="${i}" class="${b.cls || ''}">${esc(b.label)}</button>`).join('')}</div><button class="cancel" data-i="-1">Mégse</button>`;
+    ov.classList.add('show'); d.classList.add('show');
+    const done = v => { d.classList.remove('show'); ov.classList.remove('show'); d.onclick = null; ov.onclick = null; res(v); };
+    d.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; const i = +b.dataset.i; done(i < 0 ? null : buttons[i].value); };
+    ov.onclick = () => done(null);
+  });
+}
+
+/* Egy esemény sora (idővonal és főképernyő) */
+function evRow(e, match) {
+  let ic = '•', c = '142,142,147', tt = '', sb = '', tg = '';
+  switch (e.type) {
+    case 'meal':
+      ic = '🍽️'; c = '255,159,10'; tt = esc(e.text || 'Étkezés');
+      sb = `${SIZE_L[e.size] || ''}${e.fullness ? ` · Jóllakottság ${e.fullness}/5` : ''}`;
+      tg = (e.tags || []).map(tagMini).join('');
+      break;
+    case 'drink': {
+      const D = DRINK[e.kind] || DRINK.other; ic = D.icon; c = D.rgb; tt = esc(D.name(e));
+      if (e.kind === 'coffee' && e.fasting) tg = `<span class="badge" style="--c:255,159,10">Éhgyomri</span>`;
+      break;
+    }
+    case 'check':
+      ic = '🎈'; c = '191,90,242'; tt = `Puffadás ${e.bloat ?? '–'}/5`;
+      sb = `Fájdalom ${e.pain ?? '–'} · Éhség ${e.hunger ?? '–'} · ${STRESS_L[e.stress] || 'stressz –'}${e.note ? ' · ' + esc(e.note) : ''}`;
+      break;
+    case 'stool': {
+      const B = BRISTOL[e.bristol]; ic = '🚽'; c = B ? B.rgb : '142,142,147';
+      tt = B ? `Széklet · ${B.name}` : 'Széklet';
+      const bs = [];
+      if (e.reflex) bs.push(`<span class="badge" style="--c:255,214,10">⚡ Reflex ${e.reflex.minutes} p</span>`);
+      if (e.urgent) bs.push(`<span class="badge" style="--c:255,69,58">🚨 Sürgős</span>`);
+      if (e.incomplete) bs.push(`<span class="badge" style="--c:255,159,10">Nem ürült ki</span>`);
+      if (e.blood) bs.push(`<span class="badge" style="--c:255,69,58">🩸 Red flag</span>`);
+      tg = bs.join('');
+      sb = [e.reflex ? `${esc(e.reflex.label)} után` : '', e.note ? esc(e.note) : ''].filter(Boolean).join(' · ');
+      break;
+    }
+    case 'sleep':
+      ic = '🌙'; c = '94,92,230'; tt = `Alvás ${HOURS_L[e.hours] || '–'} · ${QUAL_L[e.quality] || '–'}`;
+      sb = `Reggel: ${BELLY_L[e.belly] || '–'} · Éjjel: ${e.nightWake ? 'székelési ingerre felébredt ⚠️' : 'nem ébredt fel'}`;
+      break;
+  }
+  return `<div class="ev${match ? ' match' : ''}" role="button" tabindex="0" data-act="edit" data-id="${esc(e.id)}"><div class="ic" style="--c:${c}">${ic}</div><div class="bd"><div class="tt">${tt}</div>${sb ? `<div class="sb">${sb}</div>` : ''}${tg ? `<div class="tg">${tg}</div>` : ''}</div><div class="tm">${fmtTime(e.ts)}</div></div>`;
+}
+
+/* =========================================================================
+   1–2. FŐKÉPERNYŐ + REGGELI CHECK-IN
+   ========================================================================= */
+function sleepFormHTML(s) {
+  return `
+  <div class="field"><label>Alvás hossza</label>${seg('hours', [['4.5', '&lt;5 ó'], ['6', '6 ó'], ['7', '7 ó'], ['8', '8 ó'], ['9', '9+ ó']], s ? s.hours : null)}</div>
+  <div class="field"><label>Ébredési minőség</label>${seg('quality', [['rested', 'Kipihent'], ['avg', 'Átlagos'], ['tired', 'Fáradt / Nyúzott']], s ? s.quality : null)}</div>
+  <div class="field"><label>Reggeli hasi állapot (éhgyomorra)</label>${seg('belly', [['flat', 'Lapos és nyugodt'], ['bloated', 'Már ébredéskor puffadt / feszül', '255,159,10']], s ? s.belly : null)}</div>
+  <div class="field"><label>Éjszakai felébredés székelési ingerre</label>${seg('wake', [['no', 'Nem'], ['yes', 'Igen (Red flag!)', '255,69,58']], s ? (s.nightWake ? 'yes' : 'no') : null)}</div>`;
+}
+function readSleep(root) {
+  const h = getSeg(root, 'hours');
+  return { hours: h != null ? Number(h) : null, quality: getSeg(root, 'quality'), belly: getSeg(root, 'belly'), nightWake: getSeg(root, 'wake') === 'yes' };
+}
+
+function renderHome() {
+  // félig kitöltött reggeli kártya megőrzése újrarajzoláskor
+  const keep = {};
+  const oldCard = $('#sleepCard');
+  if (oldCard) ['hours', 'quality', 'belly', 'wake'].forEach(n => { keep[n] = getSeg(oldCard, n); });
+
+  const now = Date.now(), tk = dayKey(now);
+  S.renderedDay = tk;
+  const days = buildDays(S.events);
+  const d = days.get(tk) || emptyDay(tk);
+  const n = d.n, z = zoneOf(n);
+  const y = days.get(addDaysKey(tk, -1));
+  let s7 = 0, c7 = 0;
+  for (let i = 1; i <= 7; i++) { const x = days.get(addDaysKey(tk, -i)); if (x && x.logged) { s7 += x.n; c7++; } }
+  const lastStool = d.stools[d.stools.length - 1];
+  const bl = d.checks.map(c => c.bloat).filter(v => v);
+  const avgB = avg(bl), maxB = bl.length ? Math.max(...bl) : null;
+  const wdl = d.drinks.filter(x => x.kind === 'water').reduce((a, x) => a + (x.amount || 3), 0);
+  const cof = d.drinks.filter(x => x.kind === 'coffee'), cofF = cof.filter(x => x.fasting).length;
+  const oth = d.drinks.filter(x => x.kind === 'other');
+  const mealToday = d.meals.some(m => m.ts <= now);
+  let lastMeal = null;
+  for (let i = S.events.length - 1; i >= 0; i--) { const e = S.events[i]; if (e.type === 'meal' && e.ts <= now) { lastMeal = e; break; } }
+  const sleep = d.sleep;
+  const flags = [];
+  if (sleep && sleep.nightWake) flags.push('éjszakai felébredés székelési ingerre');
+  if (d.stools.some(s => s.blood)) flags.push('vér / fekete, szurokszerű széklet');
+
+  const slots = Math.max(6, n);
+  const dots = Array.from({ length: slots }, (_, i) => `<i class="${i < n ? 'f' : ''} ${i < 2 ? 'g' : ''}"></i>`).join('');
+
+  const heroFoot = lastStool
+    ? `Utolsó: <b>${fmtTime(lastStool.ts)}</b>${BRISTOL[lastStool.bristol] ? ' · ' + BRISTOL[lastStool.bristol].name : ''}${lastStool.reflex ? ` · ⚡ ${lastStool.reflex.minutes} p-cel étkezés/kávé után` : ''}`
+    : 'Ma még nincs rögzített széklet.';
+
+  const sleepCard = sleep
+    ? `<div class="card"><div class="ct"><h2>🌙 Reggeli check-in</h2><button class="btn ghost" data-act="edit" data-id="${esc(sleep.id)}">Szerkesztés</button></div>
+        <div class="small">Alvás <b>${HOURS_L[sleep.hours] || '–'}</b> · ${QUAL_L[sleep.quality] || '–'}<br><span class="muted">Reggeli has: ${BELLY_L[sleep.belly] || '–'} · Éjjel: ${sleep.nightWake ? '<span style="color:var(--red)">felébredt (red flag)</span>' : 'nem ébredt fel'}</span></div></div>`
+    : `<div class="card hl" id="sleepCard"><div class="ct"><h2>🌙 Reggeli check-in</h2><span class="ctx">ma még nincs kitöltve</span></div>${sleepFormHTML(null)}<button class="btn blue full" data-act="sleep-save">Reggeli check-in mentése</button></div>`;
+
+  const todayList = S.events.filter(e => dayKey(e.ts) === tk).slice().reverse();
+
+  $('#page-home').innerHTML = `
+  <div class="hdr"><div class="sub">${esc(DTF_LONG.format(now))}</div><h1>Rögzítés</h1></div>
+  ${flags.length ? `<div class="notice"><span>⚠️</span><div><b>Red flag ma:</b> ${flags.join(', ')}. Ez nem tipikus IBS-tünet – érdemes orvossal (gasztroenterológus) megbeszélni.</div></div>` : ''}
+  <div class="card hero" style="--zone:${z.hex}">
+    <div class="glow"></div>
+    <div class="hero-top"><span class="lbl">Mai széklet</span><span class="pill">● ${z.name}</span></div>
+    <div class="hero-main">
+      <div><div class="count">${n}<small>db</small></div><div class="goal">Cél: <b>1–2 / nap</b></div></div>
+      <button class="plus" data-act="stool"><span class="p1">+1</span><span class="p2">Széklet rögzítése</span></button>
+    </div>
+    <div class="dots">${dots}</div>
+    <div class="hero-foot">${heroFoot}<br>Tegnap: <b>${y ? y.n : '–'}</b> · 7 napos átlag: <b>${c7 ? f1(s7 / c7) : '–'}</b></div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><h2>Mai összesítő</h2></div>
+    <div class="stats">
+      <div class="stat"><div class="k">🎈 Puffadás</div><div class="v">${avgB != null ? f1(avgB) : '–'}</div><div class="s">${maxB != null ? `átlag · max ${maxB}` : 'nincs check-in'}</div></div>
+      <div class="stat"><div class="k">🍽️ Utolsó étkezés</div><div class="v" id="sinceMeal">${lastMeal ? fmtAgo(now - lastMeal.ts) : '–'}</div><div class="s">${lastMeal ? `${dayKey(lastMeal.ts) === tk ? '' : dayLabel(dayKey(lastMeal.ts)) + ' '}${fmtTime(lastMeal.ts)} · ${esc(trunc(lastMeal.text, 18))}` : 'még nincs rögzítve'}</div></div>
+      <div class="stat"><div class="k">💧 Folyadék</div><div class="v">${f1(wdl / 10)} l</div><div class="s">☕ ${cof.length} · 🥤 ${oth.length}</div></div>
+    </div>
+  </div>
+
+  ${!sleep ? sleepCard : ''}
+
+  <div class="card">
+    <div class="ct"><h2>Folyadékbevitel</h2><span class="ctx">1 érintés = 1 adag</span></div>
+    <div class="grid3">
+      <button class="btn drink" data-act="water"><span class="e">💧</span><span class="l">+ Víz<br>(3 dl)</span>${d.drinks.filter(x => x.kind === 'water').length ? `<span class="n">${d.drinks.filter(x => x.kind === 'water').length}</span>` : ''}</button>
+      <button class="btn drink" data-act="coffee"><span class="e">☕</span><span class="l">+ Kávé /<br>Koffein</span>${cof.length ? `<span class="n">${cof.length}</span>` : ''}${cofF ? `<span class="w">${cofF}× éhgyomri</span>` : (!mealToday ? '<span class="w">most éhgyomri</span>' : '')}</button>
+      <button class="btn drink" data-act="other"><span class="e">🥤</span><span class="l">+ Alkohol /<br>Cukros / Zero</span>${oth.length ? `<span class="n">${oth.length}</span>` : ''}</button>
+    </div>
+  </div>
+
+  <div class="card stack">
+    <button class="btn act" data-act="meal" style="--c:255,159,10"><span class="ai">🍽️</span><span class="at">Étkezés rögzítése<small>Mit, mennyit – automatikus összetevő-címkék</small></span></button>
+    <button class="btn act" data-act="check" style="--c:191,90,242"><span class="ai">🎈</span><span class="at">Állapot / Puffadás check-in<small>Puffadás, fájdalom, éhség, stressz</small></span></button>
+    <button class="btn act" data-act="stool" style="--c:255,214,10"><span class="ai">🚽</span><span class="at">Széklet részletesen<small>Bristol-skála, sürgősség, reflex-detektor</small></span></button>
+  </div>
+
+  ${sleep ? sleepCard : ''}
+
+  <div class="ct" style="margin:20px 4px 8px"><h2>Mai események</h2>${todayList.length ? `<button class="btn ghost" data-act="tab" data-v="timeline">Összes</button>` : ''}</div>
+  ${todayList.length ? `<div class="card list">${todayList.slice(0, 8).map(e => evRow(e)).join('')}</div>`
+    : `<div class="card empty"><div class="ei">📝</div>Ma még nincs bejegyzés.${S.events.length ? '' : '<br><span class="small">Tipp: az <b>Adatok</b> fülön tesztadatokkal azonnal kipróbálhatod az elemzést.</span>'}</div>`}
+  `;
+  const nc = $('#sleepCard');
+  if (nc) Object.entries(keep).forEach(([nm, v]) => { if (v == null) return; const b = nc.querySelector(`.seg[data-name="${nm}"] button[data-v="${v}"]`); if (b) b.classList.add('on'); });
+}
+
+async function saveSleepInline() {
+  const card = $('#sleepCard'); if (!card) return;
+  const v = readSleep(card);
+  if (v.hours == null) { toast('Add meg legalább az alvás hosszát'); return; }
+  const now = Date.now();
+  const existing = S.events.find(e => e.type === 'sleep' && dayKey(e.ts) === dayKey(now));
+  const e = existing ? Object.assign(existing, v) : { id: uid(), type: 'sleep', ts: now, date: dayKey(now), ...v };
+  await saveEvent(e);
+  toast(v.nightWake ? '🌙 Mentve – éjszakai felébredés: red flag jelölve' : '🌙 Reggeli check-in mentve');
+}
+
+async function addDrink(kind) {
+  const now = Date.now();
+  const e = { id: uid(), type: 'drink', kind, ts: now };
+  if (kind === 'water') e.amount = 3;
+  if (kind === 'other') e.sub = 'other';
+  await saveEvent(e);
+  const msg = kind === 'water' ? '💧 +3 dl víz' : kind === 'coffee' ? (e.fasting ? '☕ Kávé – éhgyomorra!' : '☕ Kávé rögzítve') : '🥤 Ital rögzítve';
+  toast(msg, { action: 'Visszavonás', onAction: () => deleteEvent(e.id, true) });
+}
+
+/* =========================================================================
+   3. ÉTKEZÉS LAP
+   ========================================================================= */
+function recentMeals(n) {
+  const seen = new Set(), out = [];
+  for (let i = S.events.length - 1; i >= 0 && out.length < n; i--) {
+    const e = S.events[i];
+    if (e.type !== 'meal' || !e.text) continue;
+    const k = norm(e.text.trim()); if (seen.has(k)) continue;
+    seen.add(k); out.push(e);
+  }
+  return out;
+}
+function openMealSheet(ev) {
+  const e = ev ? clone(ev) : { id: uid(), type: 'meal', ts: Date.now(), text: '', size: 'M', fullness: 3, tags: [], tagOverrides: { on: [], off: [] } };
+  const ov = { on: new Set((e.tagOverrides && e.tagOverrides.on) || []), off: new Set((e.tagOverrides && e.tagOverrides.off) || []) };
+  const recent = ev ? [] : recentMeals(8);
+  const body = Sheet.open({
+    title: ev ? 'Étkezés szerkesztése' : 'Új étkezés',
+    body: `
+    <div class="field"><label>Időpont</label><input class="input" type="datetime-local" id="f-ts" value="${toLocalInput(e.ts)}"></div>
+    <div class="field"><label>Étel és mennyiség <span class="hint">vesszővel elválasztva</span></label>
+      <textarea class="input" id="f-text" rows="2" placeholder="pl. Rántott hús sült krumplival, uborkasaláta" autocapitalize="sentences">${esc(e.text)}</textarea>
+      ${recent.length ? `<div class="flabel" style="margin-top:12px">Legutóbbiak <span class="hint">érintéssel újra</span></div><div class="chips scroll" id="f-recent">${recent.map((m, i) => `<button type="button" class="chip" data-i="${i}">↺ ${esc(trunc(m.text, 28))}</button>`).join('')}</div>` : ''}
+    </div>
+    <div class="field"><label>Összetevő-címkék <span class="hint">automatikus · érintéssel ki/be</span></label><div class="chips" id="f-tags"></div><div class="note" id="f-hits"></div></div>
+    <div class="field"><label>Adag mérete</label>${seg('size', [['S', 'Kis adag / Snack'], ['M', 'Normál adag'], ['L', 'Nagy / Bőséges', '255,159,10']], e.size)}</div>
+    <div class="field"><label>Jóllakottság / laktatóság</label>${scale('fullness', e.fullness, ['Alig laktatott', 'Nagyon laktató'], 'neutral')}</div>`,
+    onSave: async b => {
+      const text = $('#f-text', b).value.trim();
+      if (!text) { toast('Írd be, mit ettél 🙂'); $('#f-text', b).focus(); return false; }
+      e.ts = readTs($('#f-ts', b), e.ts);
+      e.text = text;
+      e.size = getSeg(b, 'size') || 'M';
+      const fu = getSeg(b, 'fullness'); e.fullness = fu ? Number(fu) : null;
+      e.tags = finalTags(autoTag(text).tags, { on: [...ov.on], off: [...ov.off] });
+      e.tagOverrides = { on: [...ov.on], off: [...ov.off] };
+      await saveEvent(e);
+      toast(`🍽️ Mentve${e.tags.length ? ' · ' + e.tags.map(t => TAG[t].emoji).join(' ') : ''}`);
+    },
+    onDelete: ev ? () => deleteEvent(ev.id) : null,
+  });
+  const ta = $('#f-text', body), tagsEl = $('#f-tags', body), hitsEl = $('#f-hits', body);
+  const refreshTags = () => {
+    const a = autoTag(ta.value);
+    const fin = new Set(finalTags(a.tags, { on: [...ov.on], off: [...ov.off] }));
+    tagsEl.innerHTML = TAGS.map(t => {
+      const manual = ov.on.has(t.id) || ov.off.has(t.id);
+      return `<button type="button" class="chip ${fin.has(t.id) ? 'on' : ''}" data-t="${t.id}" style="--c:${t.rgb}">${t.emoji} ${esc(t.short)}${manual ? '<span class="m" title="kézzel módosítva"></span>' : ''}</button>`;
+    }).join('');
+    const parts = TAGS.filter(t => a.hits[t.id]).map(t => `${t.emoji} ${esc(a.hits[t.id].join(', '))}`);
+    hitsEl.innerHTML = !ta.value.trim() ? 'Gépelj – a felismert összetevők címkéi maguktól bekapcsolnak.'
+      : parts.length ? `Felismerve: ${parts.join(' · ')}${a.safeBlocked ? '<br>A „Kímélő” címke nem kapcsolt be automatikusan, mert trigger-összetevő is van benne.' : ''}${(ov.on.size || ov.off.size) ? '<br><span style="color:var(--yellow)">●</span> = kézzel felülbírálva' : ''}`
+      : 'Nem ismertem fel kulcsszót – a címkéket kézzel is bekapcsolhatod.';
+  };
+  tagsEl.addEventListener('click', ev2 => {
+    const c = ev2.target.closest('.chip'); if (!c) return;
+    const id = c.dataset.t;
+    const fin = new Set(finalTags(autoTag(ta.value).tags, { on: [...ov.on], off: [...ov.off] }));
+    if (fin.has(id)) { if (ov.on.has(id)) ov.on.delete(id); else ov.off.add(id); }
+    else { if (ov.off.has(id)) ov.off.delete(id); else ov.on.add(id); }
+    refreshTags();
+  });
+  ta.addEventListener('input', refreshTags);
+  const rc = $('#f-recent', body);
+  if (rc) rc.addEventListener('click', ev2 => {
+    const c = ev2.target.closest('.chip'); if (!c) return;
+    const m = recent[+c.dataset.i]; ta.value = m.text;
+    ov.on = new Set((m.tagOverrides && m.tagOverrides.on) || []); ov.off = new Set((m.tagOverrides && m.tagOverrides.off) || []);
+    const sb = body.querySelector(`.seg[data-name="size"] button[data-v="${m.size}"]`);
+    if (sb) { $$('.seg[data-name="size"] button', body).forEach(x => x.classList.toggle('on', x === sb)); }
+    refreshTags();
+  });
+  refreshTags();
+}
+
+/* =========================================================================
+   4. NAPKÖZBENI ÁLLAPOT / PUFFADÁS
+   ========================================================================= */
+function openCheckSheet(ev) {
+  const e = ev ? clone(ev) : { id: uid(), type: 'check', ts: Date.now(), bloat: null, pain: null, hunger: null, stress: null, note: '' };
+  Sheet.open({
+    title: ev ? 'Check-in szerkesztése' : 'Állapot / Puffadás',
+    body: `
+    <div class="field"><label>Időpont</label><input class="input" type="datetime-local" id="f-ts" value="${toLocalInput(e.ts)}"></div>
+    <div class="field"><label>Puffadás mértéke</label>${scale('bloat', e.bloat, ['Lapos', 'Feszülő lufi'])}</div>
+    <div class="field"><label>Hasi fájdalom / görcs / rosszullét</label>${scale('pain', e.pain, ['Semmi', 'Erős görcs / hányinger'])}</div>
+    <div class="field"><label>Éhségérzet</label>${scale('hunger', e.hunger, ['Tele vagyok', 'Farkaséhes'], 'neutral')}</div>
+    <div class="field"><label>Stressz / ideges feszültség</label>${seg('stress', [['1', '😌 Nyugodt'], ['2', '😐 Átlagos'], ['3', '😣 Feszült / Stresszes', '255,69,58']], e.stress)}</div>
+    <div class="field"><label>Megjegyzés</label><input class="input" id="f-note" value="${esc(e.note)}" placeholder="pl. sok gáz, böfögés, munkahelyi stressz"></div>`,
+    onSave: async b => {
+      const bloat = getSeg(b, 'bloat');
+      if (!bloat) { toast('Válaszd ki a puffadás mértékét (1–5)'); return false; }
+      e.ts = readTs($('#f-ts', b), e.ts);
+      e.bloat = Number(bloat);
+      const p = getSeg(b, 'pain'), h = getSeg(b, 'hunger'), s = getSeg(b, 'stress');
+      e.pain = p ? Number(p) : null; e.hunger = h ? Number(h) : null; e.stress = s ? Number(s) : null;
+      e.note = $('#f-note', b).value.trim();
+      await saveEvent(e);
+      toast(`🎈 Check-in mentve (puffadás ${e.bloat}/5)`);
+    },
+    onDelete: ev ? () => deleteEvent(ev.id) : null,
+  });
+}
+
+/* =========================================================================
+   5. SZÉKLET + REFLEX-DETEKTOR
+   ========================================================================= */
+function openStoolSheet(ev) {
+  const e = ev ? clone(ev) : { id: uid(), type: 'stool', ts: Date.now(), bristol: null, urgent: false, incomplete: false, blood: false, note: '' };
+  const bopts = [1, 2, 3, 4].map(i => [String(i), `<i>${BRISTOL[i].i}</i><b>${i}. ${BRISTOL[i].name}</b><span>${BRISTOL[i].sub}</span>`, BRISTOL[i].rgb]);
+  const body = Sheet.open({
+    title: ev ? 'Széklet szerkesztése' : 'Széklet rögzítése',
+    body: `
+    <div class="field"><label>Időpont</label><input class="input" type="datetime-local" id="f-ts" value="${toLocalInput(e.ts)}"></div>
+    <div class="reflex-prev" id="f-reflex"></div>
+    <div class="field"><label>Állag (egyszerűsített Bristol-skála)</label>${seg('bristol', bopts, e.bristol, 'bristol')}</div>
+    <div class="field"><label>Sürgősség</label>${seg('urgent', [['0', 'Normál inger'], ['1', 'Azonnal rohanni kellett!', '255,69,58']], e.urgent ? '1' : '0')}</div>
+    <div class="field"><label>Ürítés utáni érzés</label>${seg('incomplete', [['0', 'Megkönnyebbültem'], ['1', 'Még maradt bent / puffadt maradtam', '255,159,10']], e.incomplete ? '1' : '0')}</div>
+    <div class="field"><label>Vér vagy fekete, szurokszerű széklet <span class="hint">red flag</span></label>${seg('blood', [['0', 'Nem'], ['1', 'Igen', '255,69,58']], e.blood ? '1' : '0')}</div>
+    <div class="field"><label>Megjegyzés</label><input class="input" id="f-note" value="${esc(e.note)}" placeholder="opcionális"></div>`,
+    onSave: async b => {
+      e.ts = readTs($('#f-ts', b), e.ts);
+      const br = getSeg(b, 'bristol'); e.bristol = br ? Number(br) : null;
+      e.urgent = getSeg(b, 'urgent') === '1';
+      e.incomplete = getSeg(b, 'incomplete') === '1';
+      e.blood = getSeg(b, 'blood') === '1';
+      e.note = $('#f-note', b).value.trim();
+      await saveEvent(e);
+      const saved = S.events.find(x => x.id === e.id) || e;
+      const cnt = S.events.filter(x => x.type === 'stool' && dayKey(x.ts) === dayKey(saved.ts)).length;
+      toast(saved.reflex ? `⚡ Reflex: ${saved.reflex.minutes} perccel ${saved.reflex.label.replace(/^\S+\s/, '')} után` : `🚽 Mentve · aznap ${cnt}. alkalom`);
+    },
+    onDelete: ev ? () => deleteEvent(ev.id) : null,
+  });
+  const pv = $('#f-reflex', body), tsIn = $('#f-ts', body);
+  const upd = () => {
+    const ts = readTs(tsIn, e.ts);
+    const trig = S.events.filter(isTrigger);
+    const r = computeReflex({ id: e.id, ts }, trig);
+    if (r) { pv.className = 'reflex-prev on'; pv.innerHTML = `⚡ <b>Gasztrokolikus reflex (&lt;45 p)</b><br>${r.minutes} perccel ez után: ${esc(r.label)}`; return; }
+    let last = null; for (const t of trig) { if (t.ts <= ts) last = t; else break; }
+    pv.className = 'reflex-prev';
+    pv.innerHTML = last ? `Utolsó étkezés / kávé: ${esc(triggerLabel(last))} – ${fmtAgo(ts - last.ts)}-cel korábban.<br>Nem esik a 45 perces reflex-ablakba.` : 'Még nincs rögzített étkezés vagy kávé – a reflex-detektor étkezés után működik.';
+  };
+  tsIn.addEventListener('change', upd); tsIn.addEventListener('input', upd);
+  upd();
+}
+
+/* =========================================================================
+   ITAL + ALVÁS SZERKESZTÉS
+   ========================================================================= */
+function openDrinkSheet(ev) {
+  const e = clone(ev);
+  const body = Sheet.open({
+    title: 'Ital szerkesztése',
+    body: `
+    <div class="field"><label>Időpont</label><input class="input" type="datetime-local" id="f-ts" value="${toLocalInput(e.ts)}"></div>
+    <div class="field"><label>Típus</label>${seg('kind', [['water', '💧 Víz'], ['coffee', '☕ Kávé / Koffein'], ['other', '🥤 Alkohol / Üdítő']], e.kind)}</div>
+    <div class="field" id="f-amt"><label>Mennyiség</label>${seg('amount', [['1', '1 dl'], ['2', '2 dl'], ['3', '3 dl'], ['5', '5 dl']], e.amount || 3)}</div>
+    <div class="field" id="f-sub"><label>Pontosabban</label>${seg('sub', [['alcohol', '🍺 Alkohol'], ['sugary', '🥤 Cukros'], ['zero', '🧪 Zero / light'], ['other', 'Egyéb']], e.sub || 'other', 'wrap')}</div>
+    <div class="note" id="f-fast" style="margin:-6px 4px 18px"></div>`,
+    onSave: async b => {
+      e.ts = readTs($('#f-ts', b), e.ts);
+      e.kind = getSeg(b, 'kind') || 'water';
+      if (e.kind === 'water') e.amount = Number(getSeg(b, 'amount') || 3); else delete e.amount;
+      if (e.kind === 'other') e.sub = getSeg(b, 'sub') || 'other'; else delete e.sub;
+      if (e.kind !== 'coffee') delete e.fasting;
+      await saveEvent(e);
+      toast('Ital mentve');
+    },
+    onDelete: () => deleteEvent(ev.id),
+  });
+  const vis = () => {
+    const k = getSeg(body, 'kind');
+    $('#f-amt', body).style.display = k === 'water' ? '' : 'none';
+    $('#f-sub', body).style.display = k === 'other' ? '' : 'none';
+    $('#f-fast', body).textContent = k === 'coffee' ? 'Az „éhgyomri” jelölést az app automatikusan számolja: igaz, ha aznap a kávé előtt még nem volt étkezés rögzítve.' : '';
+  };
+  body.addEventListener('segchange', vis); vis();
+}
+function openSleepSheet(ev) {
+  const e = clone(ev);
+  Sheet.open({
+    title: 'Reggeli check-in',
+    body: `<div class="field"><label>Időpont</label><input class="input" type="datetime-local" id="f-ts" value="${toLocalInput(e.ts)}"></div>${sleepFormHTML(e)}`,
+    onSave: async b => {
+      const v = readSleep(b);
+      if (v.hours == null) { toast('Add meg az alvás hosszát'); return false; }
+      Object.assign(e, v); e.ts = readTs($('#f-ts', b), e.ts); e.date = dayKey(e.ts);
+      await saveEvent(e); toast('🌙 Mentve');
+    },
+    onDelete: () => deleteEvent(ev.id),
+  });
+}
+function openEdit(id) {
+  const e = S.events.find(x => x.id === id); if (!e) return;
+  ({ meal: openMealSheet, check: openCheckSheet, stool: openStoolSheet, drink: openDrinkSheet, sleep: openSleepSheet })[e.type]?.(e);
+}
+
+/* =========================================================================
+   7. IDŐVONAL + KERESŐ
+   ========================================================================= */
+const FILTERS = [['all', 'Mind'], ['reflex', '⚡ Reflex', '255,214,10'], ['urgent', '🚨 Sürgős', '255,69,58'], ['meal', '🍽️ Étel', '255,159,10'], ['stool', '🚽 Széklet', '172,142,104'], ['check', '🎈 Puffadás', '191,90,242'], ['drink', '🥤 Ital', '100,210,255'], ['sleep', '🌙 Alvás', '94,92,230'],
+  ...TAGS.map(t => ['tag:' + t.id, `${t.emoji} ${t.short} napok`, t.rgb])];
+function searchText(e) {
+  const p = [e.text, e.note];
+  if (e.type === 'meal') { (e.tags || []).forEach(id => TAG[id] && p.push(TAG[id].label)); p.push('étel étkezés', SIZE_L[e.size]); }
+  if (e.type === 'stool') { p.push('széklet', BRISTOL[e.bristol] && BRISTOL[e.bristol].name); if (e.reflex) p.push('reflex', e.reflex.label); if (e.urgent) p.push('sürgős'); if (e.blood) p.push('vér red flag'); }
+  if (e.type === 'drink') { p.push('ital', (DRINK[e.kind] || DRINK.other).name(e)); if (e.fasting) p.push('éhgyomri'); }
+  if (e.type === 'check') p.push('puffadás check-in állapot', STRESS_L[e.stress]);
+  if (e.type === 'sleep') p.push('alvás reggel', QUAL_L[e.quality], e.nightWake ? 'red flag éjszakai' : '');
+  return norm(p.filter(Boolean).join(' '));
+}
+function daySummaryBadges(d) {
+  if (!d) return '';
+  const z = zoneOf(d.n);
+  return `<span class="badge" style="--c:${z.rgb}">🚽 ${d.n}</span>${d.peakBloat != null ? `<span class="badge" style="--c:191,90,242">🎈 max ${d.peakBloat}</span>` : ''}`;
+}
+function renderTimeline() {
+  $('#tl-chips').innerHTML = FILTERS.map(([v, l, c]) => `<button class="chip ${S.filter.chip === v ? 'on' : ''}" data-act="filter" data-v="${v}"${c ? ` style="--c:${c}"` : ''}>${l}</button>`).join('');
+  const q = norm(S.filter.q.trim()), chip = S.filter.chip;
+  let evs = S.events.slice().reverse(), matchIds = null;
+  if (chip.startsWith('tag:')) {
+    const t = chip.slice(4);
+    const ms = evs.filter(e => e.type === 'meal' && (e.tags || []).includes(t));
+    const ds = new Set(ms.map(e => dayKey(e.ts)));
+    matchIds = new Set(ms.map(e => e.id));
+    evs = evs.filter(e => ds.has(dayKey(e.ts)));
+  } else if (chip === 'reflex') evs = evs.filter(e => e.type === 'stool' && e.reflex);
+  else if (chip === 'urgent') evs = evs.filter(e => e.type === 'stool' && e.urgent);
+  else if (chip !== 'all') evs = evs.filter(e => e.type === chip);
+  if (q) evs = evs.filter(e => searchText(e).includes(q));
+  const filtered = chip !== 'all' || !!q;
+  const groups = []; let cur = null;
+  for (const e of evs) { const k = dayKey(e.ts); if (!cur || cur.key !== k) { cur = { key: k, items: [] }; groups.push(cur); } cur.items.push(e); }
+  const shown = filtered ? groups : groups.slice(0, S.tlDays);
+  const days = buildDays(S.events);
+  let html = filtered ? `<div class="tiny" style="margin:12px 4px 0">${evs.length} találat · ${groups.length} nap</div>` : '';
+  html += shown.map(g => `<div class="dayh"><div class="dn">${esc(dayLabel(g.key))}</div><div class="ds">${daySummaryBadges(days.get(g.key))}</div></div><div class="card list">${g.items.map(e => evRow(e, matchIds && matchIds.has(e.id))).join('')}</div>`).join('');
+  if (!shown.length) html += `<div class="card empty" style="margin-top:14px"><div class="ei">${filtered ? '🔍' : '🗓️'}</div>${filtered ? 'Nincs találat erre a szűrésre.' : 'Még nincs bejegyzés.'}</div>`;
+  if (!filtered && groups.length > S.tlDays) html += `<button class="btn full" data-act="tl-more" style="margin-top:6px">Korábbi napok betöltése (${groups.length - S.tlDays})</button>`;
+  $('#tl-list').innerHTML = html;
+}
+
+/* =========================================================================
+   6. ELEMZÉS / MINTÁZAT-KERESŐ
+   ========================================================================= */
+function factorLabel(k) {
+  if (k.startsWith('tag:')) { const t = TAG[k.slice(4)]; return t ? `${t.emoji} ${t.label}` : k; }
+  if (k.startsWith('size:')) return SIZE_F[k.slice(5)] || k;
+  if (k === 'coffee') return '☕ Kávé (külön italként)';
+  if (k === 'coffee_f') return '☕ Éhgyomri kávé';
+  if (k === 'other') return '🥤 Alkohol / cukros / zero ital';
+  if (k.startsWith('item:')) return ITEM_LABEL.get(k.slice(5)) || k.slice(5);
+  return k;
+}
+function analyze(range) {
+  const now = Date.now(), tk = dayKey(now);
+  const days = buildDays(S.events);
+  const fromKey = range === 'all' ? '0000-00-00' : addDaysKey(tk, -Number(range));
+  const fromTs = range === 'all' ? 0 : keyToTs(fromKey);
+  const comp = [...days.values()].filter(d => d.logged && d.key < tk && d.key >= fromKey).sort((a, b) => a.key.localeCompare(b.key));
+  const R = { comp, nDays: comp.length };
+  R.green = comp.filter(d => d.green).length;
+  R.badN = comp.filter(d => d.bad).length;
+  R.avg = avg(comp.map(d => d.n));
+  const stoolsR = S.events.filter(e => e.type === 'stool' && e.ts >= fromTs);
+  R.nStools = stoolsR.length;
+  R.reflexPct = stoolsR.length ? stoolsR.filter(s => s.reflex).length / stoolsR.length : null;
+  R.urgentPct = stoolsR.length ? stoolsR.filter(s => s.urgent).length / stoolsR.length : null;
+
+  // ---- 1. Reflex ranglista
+  const stools = S.events.filter(e => e.type === 'stool');
+  const trig = S.events.filter(e => e.ts >= fromTs && e.ts <= now - 45 * MIN && isTrigger(e));
+  const F = new Map(), I = new Map(); let hitsAll = 0;
+  const add = (map, key, hit, mins) => {
+    let r = map.get(key); if (!r) { r = { key, n: 0, hits: 0, mins: [] }; map.set(key, r); }
+    r.n++; if (hit) { r.hits++; if (mins != null) r.mins.push(mins); }
+  };
+  for (const t of trig) {
+    let hit = false, mins = null;
+    for (let i = lowerBound(stools, t.ts); i < stools.length; i++) {
+      const s = stools[i]; if (s.ts <= t.ts) continue;
+      const dm = (s.ts - t.ts) / MIN; if (dm > 60) break;
+      if (dm <= 45) { hit = true; if (mins == null) mins = Math.round(dm); }
+      else if (s.urgent) hit = true;
+    }
+    if (hit) hitsAll++;
+    if (t.type === 'meal') {
+      (t.tags || []).forEach(id => add(F, 'tag:' + id, hit, mins));
+      add(F, 'size:' + (t.size || 'M'), hit, mins);
+      itemsOf(t).forEach(it => add(I, 'item:' + it.key, hit, mins));
+    } else {
+      add(F, 'coffee', hit, mins);
+      if (t.fasting) add(F, 'coffee_f', hit, mins);
+    }
+  }
+  const finish = rows => rows.map(r => ({ ...r, label: factorLabel(r.key), rate: r.hits / r.n, avgMin: r.mins.length ? Math.round(avg(r.mins)) : null }))
+    .sort((a, b) => (b.n >= 2) - (a.n >= 2) || b.rate - a.rate || b.n - a.n);
+  R.reflex = { n: trig.length, hits: hitsAll, base: trig.length ? hitsAll / trig.length : 0, rows: finish([...F.values()]), items: finish([...I.values()]).filter(r => r.n >= 2 && r.hits > 0).slice(0, 8) };
+
+  // ---- 2. Piros napok (4+ széklet vagy puffadás 4–5) – adott nap + megelőző 24 óra
+  const windowF = d => {
+    const set = new Set();
+    for (const k of [addDaysKey(d.key, -1), d.key]) {
+      const x = days.get(k); if (!x) continue;
+      for (const m of x.meals) {
+        (m.tags || []).forEach(id => set.add('tag:' + id));
+        if (m.size === 'L') set.add('size:L');
+        itemsOf(m).forEach(it => set.add('item:' + it.key));
+      }
+      for (const dr of x.drinks) { if (dr.kind === 'coffee' && dr.fasting) set.add('coffee_f'); if (dr.kind === 'other') set.add('other'); }
+    }
+    return set;
+  };
+  const badDays = comp.filter(d => d.bad), okDays = comp.filter(d => !d.bad);
+  const cnt = arr => { const m = new Map(); arr.forEach(d => windowF(d).forEach(k => m.set(k, (m.get(k) || 0) + 1))); return m; };
+  const cb = cnt(badDays), co = cnt(okDays);
+  const keys = new Set([...cb.keys(), ...co.keys()]);
+  const rows = [...keys].map(k => {
+    const bad = cb.get(k) || 0, ok = co.get(k) || 0;
+    const bp = badDays.length ? bad / badDays.length : 0, op = okDays.length ? ok / okDays.length : 0;
+    return { key: k, label: factorLabel(k), bad, ok, bp, op, diff: bp - op };
+  });
+  R.bad = {
+    nBad: badDays.length, nOk: okDays.length,
+    tags: rows.filter(r => !r.key.startsWith('item:') && r.bad >= 1).sort((a, b) => b.diff - a.diff || b.bad - a.bad).slice(0, 10),
+    items: rows.filter(r => r.key.startsWith('item:') && r.bad >= 2 && r.diff > 0).sort((a, b) => b.diff - a.diff || b.bad - a.bad).slice(0, 8),
+  };
+
+  // ---- 3. Biztonságos ételek (zöld napok: 1–2 széklet, puffadás ≤ 2)
+  const gm = new Map();
+  comp.filter(d => d.green).forEach(d => {
+    const seen = new Set();
+    d.meals.forEach(m => itemsOf(m).forEach(it => {
+      if (seen.has(it.key)) return; seen.add(it.key);
+      let r = gm.get(it.key); if (!r) { r = { key: it.key, g: 0, b: 0 }; gm.set(it.key, r); }
+      r.g++;
+    }));
+  });
+  R.safe = [...gm.values()].map(r => { r.b = cb.get('item:' + r.key) || 0; r.label = ITEM_LABEL.get(r.key) || r.key; r.score = r.g / (r.g + r.b); return r; })
+    .sort((a, b) => b.score - a.score || b.g - a.g).slice(0, 12);
+
+  // ---- 4. Szokás-összefüggések
+  const feats = [
+    ['☕ Éhgyomri kávé', d => d.drinks.some(x => x.kind === 'coffee' && x.fasting)],
+    ['🥤 Alkohol / üdítő', d => d.drinks.some(x => x.kind === 'other')],
+    ['🍔 Volt nagy adag', d => d.meals.some(m => m.size === 'L')],
+    ['🍟 Volt zsíros étel', d => d.meals.some(m => (m.tags || []).includes('fat'))],
+    ['😴 Alvás ≤ 6 óra', d => d.sleep ? d.sleep.hours <= 6 : null],
+    ['🥱 Fáradt ébredés', d => d.sleep && d.sleep.quality ? d.sleep.quality === 'tired' : null],
+    ['🎈 Reggel már puffadt', d => d.sleep && d.sleep.belly ? d.sleep.belly === 'bloated' : null],
+    ['😣 Stresszes nap', d => d.checks.some(c => c.stress) ? d.checks.some(c => c.stress === 3) : null],
+    ['🍽️ 4+ étkezés', d => d.meals.length >= 4],
+  ];
+  R.habits = feats.map(([label, fn]) => {
+    const a = [], b = [];
+    comp.forEach(d => { const v = fn(d); if (v == null) return; (v ? a : b).push(d.n); });
+    return { label, yes: avg(a), no: avg(b), ny: a.length, nn: b.length };
+  }).filter(r => r.ny >= 2 && r.nn >= 2);
+
+  // ---- Trend (utolsó 14 nap, mai nappal)
+  R.trend = [];
+  for (let i = 13; i >= 0; i--) { const k = addDaysKey(tk, -i); const d = days.get(k); R.trend.push({ key: k, n: d ? d.n : 0, peak: d ? d.peakBloat : null, has: !!(d && d.logged) }); }
+  const prev = []; for (let i = 14; i < 28; i++) { const d = days.get(addDaysKey(tk, -i)); if (d && d.logged) prev.push(d.n); }
+  const last = R.trend.slice(0, 13).filter(x => x.has).map(x => x.n);
+  R.trendAvg = avg(last); R.prevAvg = avg(prev);
+  return R;
+}
+
+function trendSVG(t) {
+  const W = 340, H = 196, L = 24, Rr = 22, T = 16, B = 26, pw = W - L - Rr, ph = H - T - B;
+  const tk = dayKey(Date.now());
+  const maxN = Math.max(6, ...t.map(x => x.n));
+  const y = v => T + ph - (v / maxN) * ph;
+  const yb = v => T + ph - (v / 5) * ph;
+  const step = pw / t.length, bw = Math.min(15, step * 0.6);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Napi székletszám és csúcs-puffadás az elmúlt 14 napban">`;
+  s += `<rect x="${L}" y="${y(2)}" width="${pw}" height="${y(0) - y(2)}" fill="rgba(48,209,88,.09)" rx="3"/>`;
+  const stepV = maxN > 10 ? 4 : 2;
+  for (let v = 0; v <= maxN; v += stepV) s += `<line x1="${L}" x2="${L + pw}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,.07)"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="10" fill="rgba(235,235,245,.45)">${v}</text>`;
+  s += `<line x1="${L}" x2="${L + pw}" y1="${y(2)}" y2="${y(2)}" stroke="rgba(48,209,88,.65)" stroke-dasharray="3 3"/>`;
+  s += `<text x="${L + 4}" y="${y(2) - 4}" font-size="9.5" font-weight="600" fill="rgba(48,209,88,.95)">cél ≤ 2</text>`;
+  [1, 3, 5].forEach(v => { s += `<text x="${L + pw + 5}" y="${yb(v) + 3.5}" font-size="10" fill="rgba(191,90,242,.85)">${v}</text>`; });
+  t.forEach((d, i) => {
+    const cx = L + step * i + step / 2, z = zoneOf(d.n), isT = d.key === tk;
+    if (d.n > 0) {
+      s += `<rect x="${cx - bw / 2}" y="${y(d.n)}" width="${bw}" height="${y(0) - y(d.n)}" rx="3" fill="${z.hex}" opacity="${isT ? .55 : 1}"/>`;
+      s += `<text x="${cx}" y="${y(d.n) - 4}" text-anchor="middle" font-size="10" font-weight="700" fill="${z.hex}">${d.n}</text>`;
+    } else if (d.has) s += `<rect x="${cx - bw / 2}" y="${y(0) - 2}" width="${bw}" height="2" rx="1" fill="rgba(255,255,255,.25)"/>`;
+    s += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="9.5" font-weight="${isT ? 700 : 400}" fill="${isT ? '#fff' : 'rgba(235,235,245,.5)'}">${isT ? 'Ma' : +d.key.slice(8)}</text>`;
+  });
+  let path = '', pen = false; const pts = [];
+  t.forEach((d, i) => {
+    const cx = L + step * i + step / 2;
+    if (d.peak != null) { path += `${pen ? 'L' : 'M'}${cx.toFixed(1)} ${yb(d.peak).toFixed(1)} `; pen = true; pts.push([cx, yb(d.peak)]); } else pen = false;
+  });
+  if (path) s += `<path d="${path}" fill="none" stroke="#BF5AF2" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
+  pts.forEach(([x, yv]) => { s += `<circle cx="${x.toFixed(1)}" cy="${yv.toFixed(1)}" r="3.2" fill="#000" stroke="#BF5AF2" stroke-width="2"/>`; });
+  return s + '</svg>';
+}
+
+function rankHTML(rows, base) {
+  if (!rows.length) return '<div class="empty small">Még kevés az adat ehhez a listához.</div>';
+  return rows.map(r => {
+    const p = pct(r.rate);
+    const col = r.rate >= base + 0.15 ? 'var(--red)' : r.rate >= base ? 'var(--orange)' : 'var(--green)';
+    return `<div class="rank ${r.n < 2 ? 'low' : ''}"><div class="rh"><div class="rl">${esc(r.label)}</div><div class="rv"><b>${p}%</b> · ${r.hits}/${r.n}${r.avgMin != null ? ` · ~${r.avgMin} p` : ''}</div></div><div class="bar"><i style="width:${Math.max(2, p)}%;background:${col}"></i><u style="left:${pct(base)}%"></u></div></div>`;
+  }).join('');
+}
+function dualHTML(rows) {
+  if (!rows.length) return '<div class="empty small">Nincs kiugró tényező.</div>';
+  return rows.map(r => `<div class="rank"><div class="rh"><div class="rl">${esc(r.label)}</div><div class="rv"><b style="color:${r.diff > 0.15 ? 'var(--red)' : 'var(--t1)'}">${pct(r.bp)}%</b> vs ${pct(r.op)}%</div></div><div class="bar thin"><i style="width:${Math.max(1, pct(r.bp))}%;background:var(--red)"></i></div><div class="bar thin"><i style="width:${Math.max(1, pct(r.op))}%;background:#636366"></i></div></div>`).join('');
+}
+
+function renderInsights() {
+  const el = $('#page-insights');
+  const head = `<div class="hdr"><div class="sub">Oknyomozás a saját adataidból</div><h1>Elemzés</h1></div>`;
+  if (!S.events.length) {
+    el.innerHTML = head + `<div class="card empty"><div class="ei">🔬</div>Még nincs adat az elemzéshez.<br><span class="small">Rögzíts néhány napot, vagy próbáld ki tesztadatokkal.</span><div style="height:14px"></div><button class="btn blue" data-act="demo-load">🧪 Tesztadatok betöltése</button></div>`;
+    return;
+  }
+  const A = analyze(S.range);
+  const enough = A.nDays >= 3;
+  const trendTxt = A.trendAvg != null ? `Átlag az utolsó 13 lezárt napon: <b>${f1(A.trendAvg)}</b>/nap${A.prevAvg != null ? ` (előtte 14 nap: ${f1(A.prevAvg)}${A.trendAvg < A.prevAvg ? ' ↓ javul' : A.trendAvg > A.prevAvg ? ' ↑ romlik' : ''})` : ''}` : '';
+
+  el.innerHTML = head + `
+  ${seg('range', [['14', '14 nap'], ['30', '30 nap'], ['90', '90 nap'], ['all', 'Összes']], S.range)}
+  <div style="height:14px"></div>
+  <div class="card">
+    <div class="ct"><h2>Összkép</h2><span class="ctx">${A.nDays} lezárt nap</span></div>
+    <div class="kpis">
+      <div class="stat"><div class="k">🟢 Zöld napok</div><div class="v" style="color:var(--green)">${A.green}/${A.nDays}</div><div class="s">1–2 széklet, puffadás ≤ 2</div></div>
+      <div class="stat"><div class="k">🔴 Piros napok</div><div class="v" style="color:var(--red)">${A.badN}/${A.nDays}</div><div class="s">4+ széklet vagy puffadás 4–5</div></div>
+      <div class="stat"><div class="k">🚽 Átlag / nap</div><div class="v" style="color:${zoneOf(Math.round(A.avg || 0)).hex}">${f1(A.avg)}</div><div class="s">cél: 1–2</div></div>
+      <div class="stat"><div class="k">⚡ Reflex-arány</div><div class="v">${A.reflexPct != null ? pct(A.reflexPct) + '%' : '–'}</div><div class="s">${A.urgentPct != null ? `sürgős: ${pct(A.urgentPct)}%` : 'székletek közül'}</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><h2>📈 Napi trend</h2><span class="ctx">utolsó 14 nap</span></div>
+    ${trendSVG(A.trend)}
+    <div class="legend"><span><i style="background:#30D158"></i>0–2</span><span><i style="background:#FF9F0A"></i>3–4</span><span><i style="background:#FF453A"></i>5+ széklet</span><span><i style="background:#BF5AF2;border-radius:5px"></i>csúcs-puffadás (jobb tengely 1–5)</span></div>
+    ${trendTxt ? `<div class="note">${trendTxt}</div>` : ''}
+  </div>
+
+  <div class="card">
+    <div class="ct"><h2>⚡ Gasztrokolikus reflex ranglista</h2><span class="ctx">${A.reflex.n} étkezés/kávé</span></div>
+    <div class="small muted" style="margin-bottom:6px">Milyen gyakran jött széklet 45 percen belül (vagy sürgős rohanás 60 percen belül) ezek után? Fehér jel = átlagod (${pct(A.reflex.base)}%).</div>
+    ${A.reflex.n >= 3 ? rankHTML(A.reflex.rows, A.reflex.base) : '<div class="empty small">Legalább 3 étkezés/kávé kell a ranglistához.</div>'}
+    ${A.reflex.items.length ? `<div class="flabel" style="margin:16px 0 2px">Konkrét ételek</div>${rankHTML(A.reflex.items, A.reflex.base)}` : ''}
+  </div>
+
+  <div class="card">
+    <div class="ct"><h2>🎈 Piros napok bűnösei</h2><span class="ctx">${A.bad.nBad} piros / ${A.bad.nOk} egyéb nap</span></div>
+    <div class="small muted" style="margin-bottom:6px">Mi szerepelt a 4+ székletes vagy erősen puffadt napokon és az előző 24 órában (12–36 órás késleltetett hatás)? <b style="color:var(--red)">Piros</b>: piros napok %-a · <b>szürke</b>: többi nap.</div>
+    ${!enough ? '<div class="empty small">Legalább 3 lezárt nap kell.</div>' : A.bad.nBad === 0 ? '<div class="empty small">🎉 Nem volt piros nap ebben az időszakban.</div>' : `${dualHTML(A.bad.tags)}${A.bad.items.length ? `<div class="flabel" style="margin:16px 0 2px">Konkrét ételek</div>${dualHTML(A.bad.items)}` : ''}`}
+  </div>
+
+  <div class="card">
+    <div class="ct"><h2>✅ Biztonságos ételek</h2><span class="ctx">${A.green} zöld nap</span></div>
+    <div class="small muted" style="margin-bottom:6px">Ezek szerepeltek a zöld napokon (1–2 széklet, puffadás ≤ 2). ✅ = piros nap ablakában még nem fordult elő.</div>
+    ${A.safe.length ? A.safe.map(r => `<div class="rank"><div class="rh"><div class="rl">${r.b === 0 ? '✅' : '⚠️'} ${esc(r.label)}</div><div class="rv">🟢 ${r.g}${r.b ? ` · 🔴 ${r.b}` : ''}</div></div><div class="bar thin"><i style="width:${pct(r.score)}%;background:${r.b === 0 ? 'var(--green)' : 'var(--yellow)'}"></i></div></div>`).join('') : '<div class="empty small">Még nem volt zöld nap ebben az időszakban.</div>'}
+  </div>
+
+  <div class="card">
+    <div class="ct"><h2>🧭 Szokások és napi székletszám</h2></div>
+    ${A.habits.length ? `<table class="tbl"><tr><th>Tényező</th><th>Ha igen</th><th>Ha nem</th><th>Δ</th></tr>${A.habits.map(r => { const d = r.yes - r.no; return `<tr><td>${r.label}</td><td>${f1(r.yes)} <span class="tiny">(${r.ny})</span></td><td>${f1(r.no)} <span class="tiny">(${r.nn})</span></td><td style="font-weight:700;color:${d > 0.3 ? 'var(--red)' : d < -0.3 ? 'var(--green)' : 'var(--t2)'}">${d > 0 ? '+' : ''}${f1(d)}</td></tr>`; }).join('')}</table><div class="note">Átlagos napi székletszám azokon a napokon, amikor a tényező fennállt / nem állt fenn (zárójelben a napok száma).</div>` : '<div class="empty small">Ehhez mindkét csoportban legalább 2 nap kell.</div>'}
+  </div>
+
+  <div class="note" style="margin:0 6px 10px">Az elemzés együttjárást mutat, nem bizonyít ok-okozatot. A halvány sorok kevesebb mint 2 előfordulásból számolnak. Ha gyanús ételt találsz, próbáld 1–2 hétig kihagyni, és figyeld a trendet.</div>`;
+}
+
+/* =========================================================================
+   ADATOK FÜL: EXPORT / IMPORT / DEMO
+   ========================================================================= */
+async function saveFile(name, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  if (isIOS() && navigator.canShare) {
+    try {
+      const file = new File([blob], name, { type: mime });
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return true; }
+    } catch (err) { if (err && err.name === 'AbortError') return false; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  return true;
+}
+const stamp = () => dayKey(Date.now());
+async function exportJSON() {
+  if (!S.events.length) { toast('Nincs mit menteni'); return; }
+  const data = JSON.stringify({ app: 'belnaplo', version: 1, exportedAt: new Date().toISOString(), count: S.events.length, events: S.events }, null, 1);
+  const ok = await saveFile(`belnaplo-mentes-${stamp()}.json`, data, 'application/json');
+  if (ok) { await db.setMeta('lastBackup', Date.now()); toast('✅ JSON mentés elkészült'); if (S.tab === 'data') renderData(); }
+}
+const csvQ = v => { const s = String(v ?? ''); return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const csvDate = ts => { const d = new Date(ts); return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}.`; };
+function exportCSV() {
+  if (!S.events.length) { toast('Nincs exportálható adat'); return; }
+  const H = ['Dátum', 'Idő', 'Típus', 'Leírás', 'Címkék', 'Adag', 'Jóllakottság (1-5)', 'Puffadás (1-5)', 'Fájdalom (1-5)', 'Éhség (1-5)', 'Stressz', 'Bristol (1-4)', 'Sürgős', 'Nem ürült ki teljesen', 'Vér / szurokszéklet', 'Reflex (perc)', 'Reflex kiváltó', 'Éhgyomri kávé', 'Alvás', 'Ébredés', 'Reggeli has', 'Éjszakai ébredés', 'Megjegyzés'];
+  const T = { meal: 'Étkezés', drink: 'Ital', check: 'Állapot', stool: 'Széklet', sleep: 'Alvás / reggel' };
+  const yn = v => v ? 'igen' : 'nem';
+  const rows = S.events.map(e => [
+    csvDate(e.ts), fmtTime(e.ts), T[e.type] || e.type,
+    e.type === 'meal' ? e.text : e.type === 'drink' ? (DRINK[e.kind] || DRINK.other).name(e) : e.type === 'stool' && BRISTOL[e.bristol] ? BRISTOL[e.bristol].name : '',
+    e.type === 'meal' ? (e.tags || []).map(id => TAG[id] ? TAG[id].short : id).join(', ') : '',
+    e.type === 'meal' ? SIZE_L[e.size] || '' : '',
+    e.fullness ?? '', e.bloat ?? '', e.pain ?? '', e.hunger ?? '', e.stress ? STRESS_L[e.stress] : '',
+    e.bristol ?? '', e.type === 'stool' ? yn(e.urgent) : '', e.type === 'stool' ? yn(e.incomplete) : '', e.type === 'stool' ? (e.blood ? 'IGEN' : 'nem') : '',
+    e.reflex ? e.reflex.minutes : '', e.reflex ? e.reflex.label.replace(/^\S+\s/, '') : '',
+    e.type === 'drink' && e.kind === 'coffee' ? yn(e.fasting) : '',
+    e.type === 'sleep' ? HOURS_L[e.hours] || '' : '', e.type === 'sleep' ? QUAL_L[e.quality] || '' : '', e.type === 'sleep' ? BELLY_L[e.belly] || '' : '', e.type === 'sleep' ? (e.nightWake ? 'IGEN' : 'nem') : '',
+    e.note || '',
+  ]);
+  const csv = '﻿' + [H, ...rows].map(r => r.map(csvQ).join(';')).join('\r\n');
+  saveFile(`belnaplo-naplo-${stamp()}.csv`, csv, 'text/csv');
+}
+function exportDailyCSV() {
+  if (!S.events.length) { toast('Nincs exportálható adat'); return; }
+  const days = [...buildDays(S.events).values()].sort((a, b) => a.key.localeCompare(b.key));
+  const H = ['Dátum', 'Székletszám', 'Ebből reflex (<45 p)', 'Ebből sürgős', 'Hasmenéses (Bristol 4)', 'Átlag puffadás', 'Max puffadás', 'Étkezések', 'Kávék (ebből éhgyomri)', 'Alkohol/üdítő', 'Víz (dl)', 'Alvás', 'Éjszakai ébredés', 'Napi státusz', 'Ételek'];
+  const rows = days.map(d => [
+    d.key.replace(/-/g, '.') + '.', d.n, d.stools.filter(s => s.reflex).length, d.stools.filter(s => s.urgent).length, d.stools.filter(s => s.bristol === 4).length,
+    d.avgBloat != null ? f1(d.avgBloat) : '', d.peakBloat ?? '', d.meals.length,
+    `${d.drinks.filter(x => x.kind === 'coffee').length} (${d.drinks.filter(x => x.kind === 'coffee' && x.fasting).length})`,
+    d.drinks.filter(x => x.kind === 'other').length, d.drinks.filter(x => x.kind === 'water').reduce((a, x) => a + (x.amount || 3), 0),
+    d.sleep ? HOURS_L[d.sleep.hours] || '' : '', d.sleep ? (d.sleep.nightWake ? 'IGEN' : 'nem') : '',
+    d.bad ? 'piros' : d.green ? 'zöld' : 'semleges', d.meals.map(m => m.text).join(' | '),
+  ]);
+  const csv = '﻿' + [H, ...rows].map(r => r.map(csvQ).join(';')).join('\r\n');
+  saveFile(`belnaplo-napi-osszesito-${stamp()}.csv`, csv, 'text/csv');
+}
+const VALID_TYPES = new Set(['meal', 'drink', 'check', 'stool', 'sleep']);
+async function importJSONFile(file) {
+  let data;
+  try { data = JSON.parse(await file.text()); } catch { toast('❌ Hibás JSON fájl'); return; }
+  const arr = Array.isArray(data) ? data : data && Array.isArray(data.events) ? data.events : null;
+  if (!arr) { toast('❌ Nem Bélnapló mentés'); return; }
+  const evs = arr.filter(e => e && typeof e === 'object' && e.id && VALID_TYPES.has(e.type) && Number.isFinite(e.ts));
+  if (!evs.length) { toast('❌ Nincs érvényes bejegyzés a fájlban'); return; }
+  const mode = await ask(`${evs.length} bejegyzés importálása`, 'Hozzáfűzés: a meglévők maradnak (azonos azonosítójúak felülíródnak). Csere: a jelenlegi adatok törlődnek.', [
+    { label: 'Hozzáfűzés / összefésülés', value: 'merge' }, { label: 'Teljes csere', value: 'replace', cls: 'destructive' }]);
+  if (!mode) return;
+  if (mode === 'replace') await db.clear();
+  await db.putMany(evs);
+  S.events = await db.getAll(); sortEvents();
+  ITEM_CACHE.clear();
+  await recomputeDerived();
+  refresh();
+  toast(`✅ ${evs.length} bejegyzés importálva`);
+}
+
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function buildDemo() {
+  const R = mulberry32(20261105), ch = p => R() < p, pick = a => a[Math.floor(R() * a.length)], ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+  const now = Date.now(), out = [];
+  const at = (D, h, m) => { const d = new Date(D); d.setHours(h, m, 0, 0); return d.getTime(); };
+  const add = (type, ts, p) => { if (ts > now) return null; const e = { id: 'demo-' + uid(), type, ts, demo: true, createdAt: ts, updatedAt: ts, ...p }; out.push(e); return e; };
+  const meal = (ts, [text, size]) => add('meal', ts, { text, size, fullness: size === 'L' ? ri(4, 5) : size === 'S' ? ri(1, 3) : ri(3, 4), tags: finalTags(autoTag(text).tags, {}), tagOverrides: { on: [], off: [] } });
+  const riskOf = m => { const t = new Set(m.tags); let r = 0.05; if (t.has('fat')) r += 0.34; if (m.size === 'L') r += 0.2; if (t.has('caffeine')) r += 0.22; if (t.has('spicy')) r += 0.15; if (t.has('safe')) r -= 0.04; return r; };
+  const loadOf = m => (m.tags.includes('lactose') ? 1 : 0) + (m.tags.includes('fodmap') ? 1.2 : 0);
+  const BF_R = [['Tejeskávé és croissant', 'M'], ['Kakaós csiga, kakaó', 'M'], ['Vajas kifli, trappista sajt, tejeskávé', 'M']];
+  const BF_S = [['Zabkása banánnal', 'M'], ['Pirítós tojással', 'M'], ['Puffasztott rizs-szelet, banán', 'S']];
+  const LU_R = [['Rántott hús sült krumplival', 'L'], ['Pizza szalámival', 'L'], ['Babgulyás, kenyér', 'L'], ['Gyros tál hasábburgonyával', 'L'], ['Hamburger, chips, kóla', 'L'], ['Lencsefőzelék, virsli', 'L']];
+  const LU_S = [['Csirkemell rizzsel', 'M'], ['Főtt krumpli, tőkehal', 'M'], ['Pulykamell, krumplipüré, főtt répa', 'M'], ['Húsleves, csirkemell rizzsel', 'M']];
+  const SN = [['Gyümölcsjoghurt', 'S'], ['Banán', 'S'], ['Fehérjeszelet', 'S'], ['Alma', 'S'], ['Dió, mandula', 'S'], ['Banán', 'S']];
+  const DI_R = [['Sajtos tejfölös tészta', 'L'], ['Lángos sajttal, tejföllel', 'L'], ['Saláta paradicsommal, uborkával, hagymával', 'M'], ['Csípős csirke curry rizzsel', 'L']];
+  const DI_S = [['Pulyka rizzsel és főtt répával', 'M'], ['Húsleves', 'M'], ['Lazac, rizs', 'M'], ['Tojásrántotta, pirítós', 'M']];
+  let prevLoad = 0;
+  const today = startOfDay(now);
+  for (let di = 20; di >= 0; di--) {
+    const dd = new Date(today); dd.setDate(dd.getDate() - di); const D = dd.getTime();
+    const sev = 0.3 + 0.7 * (di / 20);           // régebbi napok rosszabbak -> látható javulás
+    const risky = p => ch(p * sev + 0.06);
+    const hrs = pick(sev > 0.65 ? [4.5, 6, 6, 7] : [6, 7, 7, 8, 8, 9]);
+    const belly = ch(0.12 + prevLoad * 0.12 * sev) ? 'bloated' : 'flat';
+    add('sleep', at(D, 6, ri(35, 48)), { date: dayKey(D), hours: hrs, quality: hrs <= 6 ? (ch(.7) ? 'tired' : 'avg') : (ch(.6) ? 'rested' : 'avg'), belly, nightWake: ch(0.14 * sev) });
+    const trig = [], stools = [], meals = [];
+    if (ch(.75)) stools.push({ ts: at(D, 6, ri(50, 59)), bristol: ch(.6) ? 2 : 3, urgent: false });
+    if (ch(.85)) { const ts = at(D, 7, ri(0, 10)); add('drink', ts, { kind: 'coffee' }); trig.push({ ts, r: 0.55 }); }
+    const m1 = meal(at(D, 7, ri(30, 50)), risky(0.9) ? pick(BF_R) : pick(BF_S));
+    const m2 = meal(at(D, 12, ri(10, 50)), risky(0.85) ? pick(LU_R) : pick(LU_S));
+    const m3 = ch(.65) ? meal(at(D, 15, ri(40, 59)), pick(SN)) : null;
+    const m4 = meal(at(D, 19, ri(0, 40)), risky(0.8) ? pick(DI_R) : pick(DI_S));
+    [m1, m2, m3, m4].forEach(m => { if (m) { meals.push(m); trig.push({ ts: m.ts, r: riskOf(m) }); } });
+    for (let w = ri(2, 5), i = 0; i < w; i++) add('drink', at(D, ri(8, 20), ri(0, 59)), { kind: 'water', amount: 3 });
+    if (ch(0.25 * sev + 0.05)) add('drink', at(D, 20, ri(10, 50)), { kind: 'other', sub: pick(['alcohol', 'sugary', 'zero']) });
+    trig.forEach(t => { if (ch(t.r * sev * 1.25)) stools.push({ ts: t.ts + ri(8, 40) * MIN, bristol: ch(.55) ? 4 : 3, urgent: ch(.7) }); });
+    const extra = Math.round(prevLoad * 0.5 * sev + R() * 0.6);
+    for (let i = 0; i < extra; i++) stools.push({ ts: at(D, ri(9, 21), ri(0, 59)), bristol: ch(.5) ? 4 : 3, urgent: ch(.35) });
+    stools.forEach(s => add('stool', s.ts, { bristol: s.bristol, urgent: s.urgent, incomplete: ch(.25 * sev), blood: false, note: '' }));
+    [[10, 30], [15, 10], [21, 0]].forEach(([h, mi]) => {
+      const ts = at(D, h, mi);
+      const load = meals.filter(m => m.ts < ts).reduce((a, m) => a + loadOf(m), 0) + prevLoad * 0.4;
+      const bloat = clamp(Math.round(1 + (belly === 'bloated' ? 1 : 0) + load * 0.75 * sev + (R() - 0.35)), 1, 5);
+      add('check', ts, { bloat, pain: clamp(bloat - 1 + ri(0, 1), 1, 5), hunger: h === 10 ? ri(2, 4) : h === 15 ? ri(1, 3) : ri(1, 2), stress: pick(sev > 0.6 ? [1, 2, 3, 3] : [1, 1, 2, 2, 3]), note: bloat >= 4 ? pick(['sok gáz', 'feszül a has', 'görcsös']) : '' });
+    });
+    prevLoad = meals.reduce((a, m) => a + loadOf(m), 0);
+  }
+  return out;
+}
+async function loadDemo() {
+  if (S.events.some(e => e.demo)) { toast('A tesztadatok már be vannak töltve'); return; }
+  const evs = buildDemo();
+  await db.putMany(evs);
+  S.events.push(...evs); sortEvents();
+  await recomputeDerived();
+  refresh();
+  toast(`🧪 ${evs.length} teszt-bejegyzés betöltve`, { action: 'Elemzés', onAction: () => setTab('insights') });
+}
+async function deleteDemo() {
+  const ids = S.events.filter(e => e.demo).map(e => e.id);
+  if (!ids.length) { toast('Nincsenek tesztadatok'); return; }
+  await db.deleteMany(ids);
+  S.events = S.events.filter(e => !e.demo);
+  await recomputeDerived(); refresh();
+  toast(`🧹 ${ids.length} teszt-bejegyzés törölve`);
+}
+async function wipeAll() {
+  const ok = await ask('Minden adat törlése?', 'Ez nem vonható vissza. Előtte érdemes JSON mentést készíteni.', [{ label: 'Végleges törlés', value: true, cls: 'destructive' }]);
+  if (!ok) return;
+  await db.clear(); S.events = []; ITEM_CACHE.clear(); refresh(); toast('Minden adat törölve');
+}
+async function requestPersist() {
+  if (!(navigator.storage && navigator.storage.persist)) { toast('Ez a böngésző nem támogatja'); return; }
+  const ok = await navigator.storage.persist();
+  toast(ok ? '🔒 Tartós tárolás bekapcsolva' : 'A böngésző nem engedélyezte – a kezdőképernyős app így is védett');
+  renderData();
+}
+
+async function renderData() {
+  const n = S.events.length, demo = S.events.filter(e => e.demo).length;
+  const dayCount = new Set(S.events.map(e => dayKey(e.ts))).size;
+  const by = t => S.events.filter(e => e.type === t).length;
+  let lastBackup = null, usage = null, persisted = null;
+  try { lastBackup = await db.getMeta('lastBackup'); } catch { }
+  try { if (navigator.storage && navigator.storage.estimate) usage = (await navigator.storage.estimate()).usage; } catch { }
+  try { if (navigator.storage && navigator.storage.persisted) persisted = await navigator.storage.persisted(); } catch { }
+  if (S.tab !== 'data') return;
+  const stale = n > 20 && (!lastBackup || Date.now() - lastBackup > 7 * DAY);
+  $('#page-data').innerHTML = `
+  <div class="hdr"><div class="sub">Mentés, export, beállítások</div><h1>Adatok</h1></div>
+  ${!isStandalone() ? `<div class="card"><div class="ct"><h2>📲 Telepítés iPhone-ra</h2></div><ol class="steps"><li>Nyisd meg ezt az oldalt <b>Safariban</b>.</li><li>Koppints a <b>Megosztás</b> ikonra (négyzet felfelé nyíllal).</li><li>Válaszd a <b>Főképernyőhöz adás</b> lehetőséget, majd <b>Hozzáadás</b>.</li><li>Ezután mindig a kezdőképernyő ikonjáról indítsd – így teljes képernyős, és az adatok tartósan megmaradnak.</li></ol></div>` : ''}
+  ${stale ? `<div class="notice warn"><span>💾</span><div><b>Ideje biztonsági mentést készíteni.</b> Az adatok csak ezen a telefonon vannak – ha törlöd az appot vagy a Safari adatait, elvesznek.</div></div>` : ''}
+  <div class="card">
+    <div class="ct"><h2>Adatbázis</h2><span class="ctx">IndexedDB · csak ezen az eszközön</span></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Bejegyzés</div><div class="v">${n}</div><div class="s">${dayCount} nap</div></div>
+      <div class="stat"><div class="k">Étkezés / széklet</div><div class="v">${by('meal')} / ${by('stool')}</div><div class="s">${by('check')} check-in</div></div>
+      <div class="stat"><div class="k">Tárhely</div><div class="v">${fmtBytes(usage)}</div><div class="s">${persisted ? '🔒 tartós' : persisted === false ? 'nem tartós' : '–'}</div></div>
+    </div>
+    <div class="note">Utolsó JSON mentés: <b>${lastBackup ? DTF_FULL.format(lastBackup) : 'még nem volt'}</b>${S.events[0] ? ` · Első bejegyzés: ${DTF_FULL.format(S.events[0].ts)}` : ''}</div>
+    ${persisted === false ? `<button class="btn full" data-act="persist" style="margin-top:10px">🔒 Tartós tárolás kérése</button>` : ''}
+  </div>
+  <div class="card stack">
+    <div class="ct" style="margin:0"><h2>Biztonsági mentés</h2></div>
+    <button class="btn full blue" data-act="export-json">⬇️ JSON mentés (teljes export)</button>
+    <button class="btn full" data-act="import-json">⬆️ JSON visszaállítás (import)</button>
+    <div class="ct" style="margin:10px 0 0"><h2>Táblázat (Excel / orvos)</h2></div>
+    <button class="btn full" data-act="export-csv">📄 CSV – minden bejegyzés</button>
+    <button class="btn full" data-act="export-daily">📊 CSV – napi összesítő</button>
+    <div class="note" style="margin-top:4px">iPhone-on a megosztás ablakban a „Mentés a Fájlokba” opcióval tárolhatod (pl. iCloud Drive).</div>
+  </div>
+  <div class="card stack">
+    <div class="ct" style="margin:0"><h2>🧪 Demo mód</h2><span class="ctx">${demo ? demo + ' teszt-bejegyzés' : 'nincs betöltve'}</span></div>
+    <div class="small muted">21 napnyi valószerű tesztadat (javuló trenddel), hogy azonnal kipróbálhasd a grafikonokat és az elemzést. A saját adataidat nem érinti.</div>
+    <button class="btn full" data-act="demo-load"${demo ? ' disabled' : ''}>🧪 Tesztadatok betöltése</button>
+    <button class="btn full red" data-act="demo-del"${demo ? '' : ' disabled'}>🧹 Tesztadatok törlése</button>
+  </div>
+  <div class="card">
+    <div class="ct"><h2>📖 Összetevő-szótár</h2><span class="ctx">ékezetfüggetlen felismerés</span></div>
+    ${TAGS.map(t => `<details class="dict"><summary>${t.emoji} ${esc(t.label)} <span class="tiny">(${t.kw.length})</span></summary><p>${t.kw.map(k => esc(Array.isArray(k) ? k[1] : k.replace(/^[\^~]/, ''))).join(', ')}</p></details>`).join('')}
+    <div class="note">A „gluténmentes”, „laktózmentes”, „koffeinmentes” kifejezések automatikusan kikapcsolják az adott címkét. A „Kímélő” címke csak akkor kapcsol be magától, ha az étkezésben nincs trigger-összetevő.</div>
+  </div>
+  <div class="card stack">
+    <div class="ct" style="margin:0"><h2>Veszélyzóna</h2></div>
+    <button class="btn full red" data-act="wipe">⚠️ Minden adat törlése</button>
+  </div>
+  <div class="note" style="text-align:center;margin-bottom:10px">Bélnapló v1.0 · Nincs szerver, nincs felhő, nincs követés – minden adat a telefonodon marad.<br>Az app naplózást segít, nem helyettesíti az orvosi kivizsgálást.</div>`;
+}
+
+/* =========================================================================
+   NAVIGÁCIÓ, ESEMÉNYKEZELÉS
+   ========================================================================= */
+function render(tab) {
+  if (tab === 'home') renderHome();
+  else if (tab === 'timeline') renderTimeline();
+  else if (tab === 'insights') renderInsights();
+  else if (tab === 'data') renderData();
+}
+function refresh() { render(S.tab); }
+function setTab(tab) {
+  S.tab = tab;
+  $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tab));
+  $$('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.v === tab));
+  render(tab);
+  window.scrollTo(0, 0);
+}
+const ACTS = {
+  stool: () => openStoolSheet(), meal: () => openMealSheet(), check: () => openCheckSheet(),
+  water: () => addDrink('water'), coffee: () => addDrink('coffee'), other: () => addDrink('other'),
+  edit: a => openEdit(a.dataset.id),
+  tab: a => setTab(a.dataset.v),
+  'sleep-save': () => saveSleepInline(),
+  filter: a => { const v = a.dataset.v; S.filter.chip = (S.filter.chip === v && v !== 'all') ? 'all' : v; renderTimeline(); },
+  'tl-more': () => { S.tlDays += 14; renderTimeline(); },
+  'export-json': exportJSON, 'import-json': () => $('#importFile').click(),
+  'export-csv': exportCSV, 'export-daily': exportDailyCSV,
+  'demo-load': loadDemo, 'demo-del': deleteDemo, wipe: wipeAll, persist: requestPersist,
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('.seg button');
+  if (b) {
+    const sg = b.parentElement;
+    sg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    sg.dispatchEvent(new CustomEvent('segchange', { bubbles: true, detail: { name: sg.dataset.name, value: b.dataset.v } }));
+    return;
+  }
+  const a = e.target.closest('[data-act]');
+  if (a && ACTS[a.dataset.act]) {
+    Promise.resolve(ACTS[a.dataset.act](a)).catch(err => { console.error(err); toast('Hiba: ' + (err && err.message || err)); });
+  }
+});
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('ev')) { e.preventDefault(); e.target.click(); }
+});
+$('#sheet').addEventListener('click', async e => {
+  const b = e.target.closest('[data-sh]'); if (!b) return;
+  const act = b.dataset.sh;
+  if (act === 'cancel') return Sheet.close();
+  if (Sheet.busy) return;
+  Sheet.busy = true;
+  try {
+    if (act === 'save' && Sheet.onSave) { const r = await Sheet.onSave($('#sheet .sh-body')); if (r !== false) Sheet.close(); }
+    else if (act === 'delete' && Sheet.onDelete) { Sheet.close(); await Sheet.onDelete(); }
+  } catch (err) { console.error(err); toast('Hiba mentés közben: ' + (err && err.message || err)); }
+  finally { Sheet.busy = false; }
+});
+$('#overlay').addEventListener('click', () => Sheet.close());
+$('#page-insights').addEventListener('segchange', e => { if (e.detail.name === 'range') { S.range = e.detail.value; renderInsights(); } });
+let qTimer = null;
+$('#q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.filter.q = $('#q').value; renderTimeline(); }, 140); });
+$('#importFile').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) { try { await importJSONFile(f); } catch (err) { console.error(err); toast('❌ Import hiba: ' + err.message); } } });
+
+/* =========================================================================
+   IKON, MANIFEST, SERVICE WORKER
+   ========================================================================= */
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C1C1E"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="ar" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#30D158"/><stop offset="1" stop-color="#64D2FF"/></linearGradient></defs><rect width="512" height="512" fill="url(#bg)"/><circle cx="256" cy="256" r="160" fill="none" stroke="#2C2C2E" stroke-width="40"/><path d="M256 96 A160 160 0 1 1 117.4 336" fill="none" stroke="url(#ar)" stroke-width="40" stroke-linecap="round"/><path d="M186 262c22-36 50-36 70 0s48 36 70 0" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round"/><circle cx="256" cy="186" r="16" fill="#30D158"/></svg>`;
+function setupIcons() {
+  const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICON_SVG);
+  $('#favIcon').href = svgUrl;
+  const base = location.href.split('#')[0].split('?')[0];
+  const scope = base.replace(/[^/]*$/, '');
+  const setManifest = icons => {
+    const m = { name: 'Bélnapló – Emésztési Napló', short_name: 'Bélnapló', description: 'Étel-, tünet- és emésztési napló – offline, lokális adattárolással.', start_url: base, scope, display: 'standalone', orientation: 'portrait', background_color: '#000000', theme_color: '#000000', lang: 'hu', icons };
+    $('#manifestLink').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(m));
+  };
+  setManifest([{ src: svgUrl, sizes: 'any', type: 'image/svg+xml' }]);
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const mk = size => { const c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d').drawImage(img, 0, 0, size, size); return c.toDataURL('image/png'); };
+      const p180 = mk(180), p192 = mk(192), p512 = mk(512);
+      $('#appleIcon').href = p180;   // iOS: PNG apple-touch-icon az SVG-ből renderelve
+      setManifest([{ src: p192, sizes: '192x192', type: 'image/png' }, { src: p512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]);
+    } catch (e) { /* marad az SVG */ }
+  };
+  img.src = svgUrl;
+}
+function registerSW() {
+  // Opcionális: ha az index.html mellett van egy sw.js, teljes offline indulást ad.
+  if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+  fetch('./sw.js', { method: 'HEAD', cache: 'no-store' }).then(r => { if (r.ok) navigator.serviceWorker.register('./sw.js').catch(() => { }); }).catch(() => { });
+}
+
+/* =========================================================================
+   INDÍTÁS
+   ========================================================================= */
+async function init() {
+  setupIcons();
+  try {
+    await db.open();
+    S.events = await db.getAll();
+    sortEvents();
+  } catch (err) {
+    console.error(err);
+    $('#page-home').innerHTML = `<div class="hdr"><h1>Bélnapló</h1></div><div class="notice"><span>⚠️</span><div><b>Az adatbázis nem érhető el.</b><br>${esc(err.message || err)}<br>Privát böngészésben az iOS letilthatja az IndexedDB-t – nyisd meg normál Safari lapon vagy a kezdőképernyőről.</div></div>`;
+    return;
+  }
+  setTab('home');
+  setInterval(() => {
+    if (S.tab !== 'home') return;
+    if (S.renderedDay !== dayKey(Date.now())) { renderHome(); return; }
+    const el = $('#sinceMeal');
+    if (el) { const now = Date.now(); let lm = null; for (let i = S.events.length - 1; i >= 0; i--) { const e = S.events[i]; if (e.type === 'meal' && e.ts <= now) { lm = e; break; } } el.textContent = lm ? fmtAgo(now - lm.ts) : '–'; }
+  }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('#sheet').classList.contains('show')) refresh(); });
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
+  registerSW();
+}
+init();
+</script>
+</body>
+</html>
